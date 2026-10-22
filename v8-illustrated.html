@@ -1,0 +1,878 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Exam timeline: illustrated · v8</title>
+<style>
+@font-face{font-family:"SF Pro Rounded";src:url(assets/SFProRounded-Regular.ttf);font-weight:400}
+@font-face{font-family:"SF Pro Rounded";src:url(assets/SFProRounded-Medium.ttf);font-weight:500}
+@font-face{font-family:"SF Pro Rounded";src:url(assets/SFProRounded-SemiBold.ttf);font-weight:600}
+@font-face{font-family:"SF Pro Rounded";src:url(assets/SFProRounded-Bold.ttf);font-weight:700}
+@font-face{font-family:"SF Pro Rounded";src:url(assets/SFProRounded-Heavy.ttf);font-weight:800}
+:root{--blue-50:#EEFAFF;--blue-700:#167adf;--blue-800:#1961b4;--accent:#1565C8;--font:"SF Pro Rounded",ui-rounded,system-ui,sans-serif;--learn:#5acbff;--practice:#167adf;--revise:#ea8616}
+*{box-sizing:border-box}*::-webkit-scrollbar{display:none}*{scrollbar-width:none}
+body{margin:0;background:#efeeed;font-family:var(--font);color:#272625;-webkit-font-smoothing:antialiased}
+.page{display:flex;gap:44px;align-items:flex-start;justify-content:center;padding:28px 32px 80px}
+.side{width:390px;flex:none;display:flex;flex-direction:column;gap:12px}
+.side h1{font:700 22px/1.25 var(--font);margin:0}
+.side .sub{font:500 14px/1.5 var(--font);color:#716d69;margin:6px 0 0}
+.sec{margin-top:6px;font:700 11px/1 var(--font);letter-spacing:.06em;text-transform:uppercase;color:#716d69}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.opt{text-align:left;border:1px solid transparent;background:rgba(255,255,255,.45);border-radius:14px;padding:10px 12px;cursor:pointer;font-family:var(--font)}
+.opt:hover{background:rgba(255,255,255,.8)}
+.opt.on{background:#fff;border-color:var(--blue-700);box-shadow:0 2px 8px rgba(22,122,223,.12)}
+.opt b{display:block;font:700 14px/1.3 var(--font)}
+.opt span{display:block;margin-top:2px;font:500 12px/1.35 var(--font);color:#716d69}
+.opt i{font-style:normal;font:700 11px/1 var(--font);color:var(--blue-800);background:var(--blue-50);padding:3px 6px;border-radius:5px;margin-right:5px}
+.seg{display:flex;gap:4px;padding:4px;border-radius:12px;background:#e7e6e6}
+.seg button{flex:1;border:0;height:32px;border-radius:9px;background:transparent;font:600 13px/1 var(--font);color:#716d69;cursor:pointer}
+.seg button.on{background:#fff;color:#272625;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.card{background:#fff;border-radius:16px;padding:14px 16px;box-shadow:0 1px 3px rgba(0,0,0,.06);font:500 13px/1.55 var(--font);color:#52504c}
+.card b{color:#272625}.card ul{margin:6px 0 0;padding-left:18px}.card a{color:var(--blue-700);text-decoration:none;font-weight:600}
+.pc{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}.pc div{font:500 12.5px/1.45 var(--font)}.pc em{font-style:normal;font-weight:700;display:block;margin-bottom:2px}
+kbd{font:600 11px/1 var(--font);background:#fff;border:1px solid #ddd;border-bottom-width:2px;border-radius:5px;padding:2px 5px}
+.tag{display:inline-block;font:700 10px/1 var(--font);letter-spacing:.04em;padding:3px 6px;border-radius:5px;vertical-align:1px}.tag.new{background:#FFF1E0;color:#B45F06}
+
+.phone{width:390px;height:844px;border-radius:48px;overflow:hidden;position:relative;background:#F4F6F9;box-shadow:0 40px 80px rgba(0,0,0,.18),0 0 0 1px rgba(0,0,0,.12);flex:none}
+.island{position:absolute;top:11px;left:50%;transform:translateX(-50%);width:126px;height:37px;border-radius:24px;background:#000;z-index:200}
+.status{position:absolute;top:0;left:0;right:0;height:54px;display:flex;align-items:center;justify-content:space-between;padding:6px 34px 0 46px;font:600 17px/1 -apple-system,system-ui,sans-serif;z-index:190;pointer-events:none}
+.tap{cursor:pointer}.press{transition:transform 120ms cubic-bezier(.23,1,.32,1)}.press:active{transform:scale(.97)}
+
+/* ---- Home (new navigation, app-prototype Home v52) ---- */
+.home{position:absolute;inset:0;background:radial-gradient(120% 55% at 18% -8%,rgba(184,220,251,.95) 0%,rgba(184,220,251,0) 70%),linear-gradient(180deg,#CFE4FA 0%,#E5F0FC 24%,#F2F5FA 44%,#F7F8FA 55%)}
+.hv-glass{border:1px solid rgba(0,0,0,.07);background:radial-gradient(120% 140% at 50% 30%,rgba(255,255,255,.92),rgba(250,250,252,.85) 55%,rgba(238,238,242,.8));box-shadow:inset 0 0 0 1px rgba(255,255,255,.9),0 10px 26px rgba(0,0,0,.07);backdrop-filter:blur(14px) saturate(180%)}
+.hint{position:absolute;left:50%;top:300px;transform:translateX(-50%);font:600 12px/1 var(--font);color:#fff;background:#111827;padding:8px 10px;border-radius:8px;white-space:nowrap;animation:bob 1.6s ease-in-out infinite;z-index:5}
+.hint:before{content:"";position:absolute;top:-5px;left:50%;margin-left:-5px;border:5px solid transparent;border-top:0;border-bottom-color:#111827}
+@keyframes bob{50%{transform:translate(-50%,3px)}}
+
+/* ---- Study calendar sheet (Exam calendar v10 / app-prototype) ---- */
+.sheet{position:absolute;inset:0;z-index:60;background:#F4F6F9;transform:translateY(100%);transition:transform .32s cubic-bezier(.2,.8,.2,1);display:flex;flex-direction:column}
+.sheet.open{transform:none}
+.scroller{flex:1;overflow-y:auto;padding-bottom:60px}
+.calwrap{background:#fff;border-radius:0 0 32px 32px;box-shadow:0 1px 0 rgba(15,23,42,.04),0 12px 32px rgba(15,35,70,.06);padding:58px 18px 10px;position:sticky;top:0;z-index:5}
+.calhead{display:flex;align-items:center;justify-content:space-between;height:44px}
+.round{width:38px;height:38px;border-radius:999px;display:flex;align-items:center;justify-content:center;background:#F2F4F7;flex:none}
+.upd{height:40px;border-radius:999px;padding:0 14px;display:flex;align-items:center;gap:7px;background:#EEF5FE;color:#1565C8;font:600 14px/1 var(--font)}
+.month{margin-top:14px;display:flex;align-items:center;gap:2px;padding:0 6px}
+.month b{font:700 26px/1.1 var(--font);letter-spacing:-.4px;color:#111827}
+.month b em{font-style:normal;font-weight:500;color:#9AA3AF;margin-left:6px}
+.month .fold{display:flex;padding:6px}
+.month .arrows{margin-left:auto;display:flex;gap:8px}
+.month .arrows .round{width:34px;height:34px;background:#F4F6F9}
+.wd,.grid{display:grid;grid-template-columns:repeat(7,1fr)}
+.wd{margin-top:14px;padding-bottom:6px}
+.wd span{text-align:center;font:600 11px/1 var(--font);letter-spacing:.06em;text-transform:uppercase;color:#9AA3AF}
+.wd span.t{color:#1565C8;font-weight:800}
+.grid{row-gap:2px;padding:4px 0 2px}
+.d{position:relative;height:50px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.d .sq{position:relative;width:38px;height:38px;border-radius:999px;display:flex;align-items:center;justify-content:center;font:600 14px/1 var(--font);font-variant-numeric:tabular-nums;color:#1F2937}
+.d .sq svg{position:absolute;inset:0;transform:rotate(-90deg)}
+.d .sq .n{position:relative}
+.d.fut .sq{color:#9CA3AF}
+.d.today .sq{background:#E3EEFC;color:#1565C8;font-weight:800}
+.d.sel .sq{box-shadow:0 0 0 2px #fff,0 0 0 4px #1565C8}
+.d.out .sq{color:#C4CAD3;font-weight:500}
+.d .flag{position:absolute;top:-2px;right:2px;width:18px;height:18px;border-radius:999px;background:#1565C8;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 2px #fff}
+.legend{padding:8px 6px 0;display:flex;align-items:center;gap:6px;font:500 12px/14px var(--font);color:#6B7280}
+.grabber{display:flex;justify-content:center;padding-top:10px}.grabber span{width:36px;height:4px;border-radius:999px;background:#E3E7ED}
+
+/* ---- the journey card (new): a camera on one world ---- */
+.mod{margin:16px 14px 0;border-radius:24px;overflow:hidden;contain:paint;isolation:isolate;position:relative;box-shadow:0 1px 2px rgba(15,23,42,.05),0 6px 20px rgba(15,35,70,.08);cursor:zoom-out;touch-action:pan-y}
+.world{position:absolute;left:0;top:0;transform-origin:0 0}
+.world svg{display:block}
+.mod .ov{position:absolute;inset:0;pointer-events:none}
+.mod .ov > *{position:absolute}
+.stone{width:26px;height:26px;margin:-13px 0 0 -13px;border-radius:99px;display:flex;align-items:center;justify-content:center;font:700 11px/1 var(--font);box-shadow:0 2px 4px rgba(21,51,86,.2);cursor:pointer}
+.me{display:flex;flex-direction:column;align-items:center;transform:translate(-50%,-88%);pointer-events:none}
+.me img{object-fit:contain;filter:drop-shadow(0 4px 6px rgba(21,51,86,.3));position:relative;z-index:1}
+.me .boat{margin-top:-28%;height:auto;position:relative;z-index:2}
+.mo{font:700 11px/1 var(--font);color:#153356;background:rgba(255,255,255,.9);padding:4px 7px;border-radius:999px;white-space:nowrap;box-shadow:0 1px 3px rgba(21,51,86,.12)}
+.mo.st{background:#153356;color:#fff}
+.gflag{transform:translate(-3px,-100%);filter:drop-shadow(0 2px 3px rgba(0,0,0,.2))}
+.goal{transform:translate(-50%,-100%);font:700 13px/1.15 var(--font);white-space:nowrap;padding:7px 11px;border-radius:12px;background:#fff;color:#153356;box-shadow:0 3px 10px rgba(10,30,60,.18);text-align:center}
+.goal small{display:block;font:500 11px/1 var(--font);color:#716d69;margin-top:3px}
+.hl{position:absolute;left:12px;top:12px;pointer-events:none;z-index:2}
+.hl .pl{display:inline-flex;align-items:baseline;gap:6px;padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.82);backdrop-filter:blur(12px);box-shadow:0 1px 3px rgba(0,0,0,.08);color:#153356}
+.hl .pl b{font:700 14px/1 var(--font)}.hl .pl span{font:500 13px/1 var(--font);color:#52504C}
+.hl.bot{top:auto;bottom:12px}.mod.lay-bleed .hl.bot{top:auto;bottom:44px}
+.hl .big{padding:10px 14px 11px;border-radius:18px;color:#153356;background:rgba(255,255,255,.82);backdrop-filter:blur(14px);box-shadow:0 2px 10px rgba(10,30,60,.15)}
+.hl .big .n{font:800 28px/1 var(--font);letter-spacing:-.6px}
+.hl .big .u{font:600 13.5px/1.2 var(--font);margin-top:3px;color:#52504C}
+.zc{position:absolute;right:12px;bottom:12px;display:flex;border-radius:999px;background:rgba(255,255,255,.85);backdrop-filter:blur(12px);box-shadow:0 1px 4px rgba(0,0,0,.1);z-index:2;overflow:hidden}
+.zc button{width:36px;height:34px;border:0;background:transparent;font:500 20px/1 var(--font);color:#153356;cursor:pointer}
+.zc button+button{border-left:1px solid rgba(0,0,0,.08)}
+.zc button:disabled{color:#C4CAD3;cursor:default}
+
+.vp{position:relative;overflow:hidden}
+.vp:after{content:"";position:absolute;inset:0;background-image:var(--grain);background-size:180px;opacity:.22;mix-blend-mode:soft-light;pointer-events:none;z-index:1}
+.vp .ov,.vp .hl,.vp .zc,.vp .segf,.vp .xcta{z-index:2}
+.foot{display:flex;align-items:center;gap:10px;padding:12px 12px 12px 16px;background:#fff}
+.foot .ft{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.foot .ft b{font:700 16px/1.1 var(--font);color:#111827}.foot .ft span{font:500 13px/1.2 var(--font);color:#6B7280}
+.seg3{display:flex;gap:2px;padding:3px;border-radius:999px;background:#F1F3F6;flex:none}
+.seg3 button{border:0;background:transparent;height:30px;padding:0 11px;border-radius:999px;font:600 12.5px/1 var(--font);color:#6B7280;cursor:pointer}
+.seg3 button.on{background:#fff;color:#153356;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.segf{position:absolute;right:12px;bottom:42px;z-index:3}
+.segf .seg3{background:rgba(255,255,255,.72);backdrop-filter:blur(14px);box-shadow:0 2px 10px rgba(10,30,60,.15)}
+.segf .seg3 button.on{background:#153356;color:#fff}
+.xcta{position:absolute;left:12px;bottom:12px;z-index:3;display:flex;align-items:center;gap:6px;height:34px;padding:0 14px;border:0;border-radius:999px;background:rgba(255,255,255,.88);backdrop-filter:blur(12px);box-shadow:0 2px 8px rgba(10,30,60,.15);font:700 13px/1 var(--font);color:#153356;cursor:pointer}
+.mod.lay-caption{background:#fff}
+.mod.lay-bleed{margin:-30px 0 0;border-radius:0;box-shadow:none}
+.mod.lay-bleed .hl{top:42px;left:14px}
+#sheet[data-lay=bleed] .daylist{position:relative;z-index:2;margin-top:-30px;padding-top:24px;background:#F4F6F9;border-radius:28px 28px 0 0;box-shadow:0 -6px 18px rgba(15,35,70,.08)}
+#sheet[data-lay=bleed] .daylist:before{content:"";position:absolute;top:8px;left:50%;margin-left:-18px;width:36px;height:4px;border-radius:2px;background:#D9DEE5}
+.mod.lay-strip .hl .pl{padding:7px 11px}
+/* ---- live day plan (WeekDayDetail etc.) ---- */
+.daylist{padding:22px 14px 0}
+.dayh{display:flex;align-items:center;gap:8px;padding:0 4px 12px}
+.dayh b{font:700 20px/1.2 var(--font);color:#111827;letter-spacing:-.2px}
+.chip{font:600 12px/1 var(--font);color:#1565C8;background:#E8F1FC;padding:5px 9px;border-radius:999px}
+.pcard{background:#fff;border-radius:21px;padding:14px;box-shadow:0 1px 2px rgba(15,23,42,.04)}
+.wlabel{display:flex;align-items:center;font:600 15.75px/1.2 var(--font);color:#3E3D3B;letter-spacing:.18px;margin:0 0 10.5px}
+.wlabel .edit{margin-left:auto;border-radius:999px;background:#167ADF;padding:7px 14px;font:600 12.25px/1 var(--font);color:#fff}
+.subj{margin-bottom:10.5px;display:flex;overflow:hidden;border-radius:20px;border:1px solid;background:#fff;align-items:center}
+.subj .tile{width:60px;height:49px;display:flex;align-items:center;justify-content:center;font-size:26px;flex:none}
+.subj b{flex:1;padding:0 14px;font:600 15.75px/1.2 var(--font);color:#3E3D3B}
+.arow{margin-bottom:10.5px;display:flex;align-items:center;gap:7px;border-radius:20px;border:1px solid;padding:14px}
+.arow .ic{width:32px;height:32px;flex:none}.arow .ic img{width:32px;height:32px;object-fit:contain}
+.arow .tx{flex:1;min-width:0}
+.arow .t{font:500 15.75px/1.25 var(--font);color:#3E3D3B;letter-spacing:.18px}
+.arow .s{margin-top:3.5px;font:400 15px/1.2 var(--font);color:#52504C;letter-spacing:.16px}
+.arow .m{display:flex;align-items:center;gap:10px;font:400 14px/1 var(--font);color:#52504C}
+.ck{width:17.5px;height:17.5px;border-radius:99px;background:#58BD7D;display:flex;align-items:center;justify-content:center;flex:none}
+.todo{width:17.5px;height:17.5px;border-radius:99px;border:2px solid #B3B0AD;flex:none}
+.prog{font:500 12.25px/1.3 var(--font);color:#686664}
+.eyebrow{font:700 12.25px/1 var(--font);text-transform:uppercase;letter-spacing:.025em;color:#6B7280}
+.note{font:500 15px/1.4 var(--font);color:#686664}
+.cta{display:block;width:100%;border:0;background:#167adf;border-radius:12.982px;padding:14px 28px;box-shadow:inset 0 2.164px 4.327px rgba(255,255,255,.5);font:700 14px/14px var(--font);letter-spacing:.17px;text-transform:uppercase;color:#fff;text-align:center;cursor:pointer}
+.inset{border-radius:20px;border:1px solid #E4F2FF;background:#fff;box-shadow:0 0 10px 0 #D1E5F9 inset}
+
+/* bottom sheet (BottomSheetModal.web) */
+.scrim{position:absolute;inset:0;background:rgba(0,0,0,.5);z-index:150;display:none}.scrim.open{display:block}
+.bsheet{position:absolute;left:0;right:0;bottom:0;z-index:151;background:#fff;border-radius:20px 20px 0 0;padding:24px 18px 30px;transform:translateY(105%);transition:transform .3s cubic-bezier(.2,.8,.2,1)}
+.bsheet.open{transform:none}
+.bsheet .handle{position:absolute;top:5px;left:50%;transform:translateX(-50%);width:48px;height:4px;border-radius:2px;background:#D9D9D9}
+.bsheet h3{margin:0 0 4px;font:700 17.5px/1.3 var(--font)}.bsheet p{margin:0 0 14px;font:400 15px/1.4 var(--font);color:#52504C}
+.optrow{display:flex;justify-content:space-between;align-items:center;padding:14px;border-radius:14px;border:1px solid #D9D9D9;margin-bottom:8px;font:600 15px/1 var(--font);color:#272625;cursor:pointer;box-shadow:0 2px 0 #D9D9D9}
+.optrow span{font:400 13px/1 var(--font);color:#716d69}
+.optrow.on{background:#DAF3FF;border-color:#1E92F2;box-shadow:0 2px 0 #1E92F2}
+.toast{position:absolute;left:28px;right:28px;bottom:40px;z-index:160;padding:12px 16px;border-radius:14px;background:#111827;color:#fff;font:600 14px/1.35 var(--font);text-align:center;opacity:0;transition:opacity .2s;pointer-events:none}.toast.show{opacity:1}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="side">
+    <div>
+      <h1>Exam timeline: illustrated worlds</h1>
+      <p class="sub">The card under the calendar is a window onto one world. It opens <b>close on you</b>, with this week's days on the path. Pinch out (or press <kbd>−</kbd>) and the camera pulls back: the months around you, then the <b>whole way to the goal</b> and the exam date.</p>
+    </div>
+    <div class="sec">Metaphor</div>
+    <div class="opts" id="opts"></div>
+    <div class="sec">Layout under the calendar</div>
+    <div class="opts" id="lays"></div>
+    <div class="sec">Exam date case</div>
+    <div class="seg" id="cases"></div>
+    <div class="card" id="notes"></div>
+    <div class="card"><b>Rules for every option</b><ul><li><b>Close (default):</b> Rezzy on the path, this week's days as stones (done / missed / ahead). One line: "This week · 3 of 4 days done".</li><li><b>Middle:</b> the months around you as markers. "Week 6 of 25".</li><li><b>Whole:</b> start to goal, the date, and one number: "136 days to the summit".</li><li><b>No phases.</b> We don't know when a student moves from learning to revising, so the path only shows facts: days, months, the exam date.</li><li>Range, month or no date: the goal sits in fog or cloud until the date is exact.</li></ul></div>
+    <div class="card"><b>What's live and what's new</b><div style="margin-top:4px">The sheet, calendar and pill come from the new-nav prototype (Exam calendar v10 / app-prototype). The day plan below uses live components (<code>WeekDayDetail</code> rows, the study-time row, <code>cta-glossy</code>, SF Pro Rounded, the 3D icons). <span class="tag new">NEW</span> is only the timeline module.</div></div>
+    <div class="card"><b>References</b><ul><li>Vidia Summit Route: summit flag</li><li><a target="_blank" href="https://mobbin.com/screens/d2547f6d-14a5-4c78-ae50-e9be602c4622">Tolan</a>: character on the path to a milestone</li><li><a target="_blank" href="https://mobbin.com/screens/5bda2262-6340-4c2b-88ed-9bf108be1774">Ahead</a>: illustrated journey map</li><li>Flighty and Duolingo: one glanceable picture of progress</li><li style="margin-top:6px"><b>Art</b>: painted in SVG for this prototype, in the soft Oncourse style (bg-readiness sky). It's a direction for the illustrator, not final art.</li></ul></div>
+  </div>
+
+  <div class="phone">
+    <div class="island"></div>
+    <div class="status"><span>9:41</span><span>▮▮▮ ▬</span></div>
+    <div class="home">
+      <div style="display:flex;align-items:center;padding:62px 14px 0">
+        <div style="height:44px;border-radius:999px;padding:0 16px;display:flex;align-items:center;background:linear-gradient(180deg,#8C65C9,#573192);color:#fff;font:800 14px/1 var(--font)">GET MAX</div>
+        <div class="hv-glass" style="margin-left:auto;height:44px;border-radius:999px;display:flex;align-items:center;gap:10px;padding:0 6px 0 14px;font:700 14px/1 var(--font);color:#ea8616">🔥 12<span style="width:32px;height:32px;border-radius:99px;background:#DCEBFB;color:#167ADF;display:flex;align-items:center;justify-content:center;font-size:13px">K</span></div>
+      </div>
+      <div style="text-align:center;margin-top:18px"><img src="assets/rezzy-headshot.webp" style="width:56px"></div>
+      <div style="text-align:center;margin-top:8px;font:400 30px/1.1 var(--font);color:#1D56A8">Good evening, Kabir</div>
+      <div style="text-align:center;margin-top:14px"><div class="hv-glass tap press" id="pill" style="display:inline-flex;height:36px;border-radius:999px;padding:0 12px 0 16px;align-items:center;gap:6px;font:600 15px/1 var(--font);color:#374151"></div></div>
+      <div class="hint" id="hint">Tap the exam pill</div>
+      <div style="margin:44px 16px 0;padding:12px 14px;border-radius:15px;background:linear-gradient(180deg,#fff,rgba(242,242,242,.5));font:500 16px/26px var(--font);color:#37352F">Hi Kabir 👋 Ready for today's plan? Pharmacology first, then flashcards.</div>
+      <div class="hv-glass" style="position:absolute;left:16px;right:16px;bottom:26px;height:64px;border-radius:999px;display:flex;align-items:center;padding:0 6px;font:600 11px/1 var(--font);color:#52504c">
+        <div style="flex:1;height:52px;border-radius:999px;background:rgba(22,122,223,.08);color:#167adf;display:flex;align-items:center;justify-content:center">Home</div><div style="flex:1;text-align:center">Subjects</div><div style="flex:1;text-align:center">Practice</div><div style="flex:1;text-align:center">Readiness</div></div>
+    </div>
+
+    <div class="sheet" id="sheet">
+      <div class="scroller" id="scroller">
+        <div class="calwrap" id="cal"></div>
+        <div class="mod" id="mod"></div>
+        <div class="daylist" id="day"></div>
+      </div>
+    </div>
+    <div class="scrim" id="scrim"></div>
+    <div class="bsheet" id="bsheet"></div>
+    <div class="toast" id="toast"></div>
+  </div>
+</div>
+<script>
+const MON = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const MS = MON.map(m => m.slice(0, 3)), WD = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'], DAYN = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const TODAY = new Date(2026, 9, 22), START = new Date(2026, 8, 14), DAY = 86400000;
+const addD = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
+const addM = (d, n) => { const x = new Date(d); x.setMonth(x.getMonth() + n); return x; };
+const same = (a, b) => a && b && a.toDateString() === b.toDateString();
+const diff = (a, b) => Math.round((b - a) / DAY);
+const wkStart = d => addD(d, -((d.getDay() + 6) % 7));
+const fmt = d => `${MS[d.getMonth()]} ${d.getDate()}`;
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const lerp = (a, b, t) => a + (b - a) * t;
+const smooth = t => t * t * (3 - 2 * t);
+// ---------- exam + plan model (same as v1) ----------
+const CASES = [
+  { k: 'date', t: 'Exact date', kind: 'date', v: new Date(2027, 2, 7) },
+  { k: 'range', t: 'Range', kind: 'range', v: [3, 6] },
+  { k: 'month', t: 'Month', kind: 'month', v: new Date(2027, 5, 1) },
+  { k: 'none', t: 'No date', kind: 'none' },
+];
+const S = { opt: 'A', c: 'date', setTo: null, open: false, level: 0, sel: TODAY };
+function exam() {
+  const c = CASES.find(x => x.k === S.c), e = S.setTo ? { ...c, ...S.setTo } : c;
+  if (e.kind === 'date') return { ...e, end: e.v, win: null };
+  if (e.kind === 'month') return { ...e, end: e.v, win: [e.v, new Date(e.v.getFullYear(), e.v.getMonth() + 1, 0)] };
+  if (e.kind === 'range') { const a = addM(TODAY, e.v[0]), b = addM(TODAY, e.v[1]); return { ...e, end: a, win: [a, b] }; }
+  return { kind: 'none' };
+}
+function countdown() {
+  const e = exam();
+  if (e.kind === 'none') return 'Set your exam date';
+  if (e.kind === 'date') { const d = diff(TODAY, e.v); return d <= 90 ? `${d} days to go` : `${Math.round(d / 30.4)} months to go`; }
+  if (e.kind === 'month') return `${(e.v.getFullYear() - TODAY.getFullYear()) * 12 + e.v.getMonth() - TODAY.getMonth()} months to go · ${MON[e.v.getMonth()]}`;
+  return `${e.v[0]}–${e.v[1]} months to go`;
+}
+function shortCd() {
+  const e = exam();
+  if (e.kind === 'none') return 'Add exam date';
+  if (e.kind === 'date') return `NEET-PG · ${diff(TODAY, e.v)} days`;
+  if (e.kind === 'month') return `NEET-PG · ${MS[e.v.getMonth()]} ${e.v.getFullYear()}`;
+  return `NEET-PG · ${e.v[0]}–${e.v[1]} mo`;
+}
+// camps worked back from the earliest exam date: last 4 weeks = summit push, ~38% before = camp 2, rest = base camp
+function phases() {
+  const e = exam(); if (e.kind === 'none') return null;
+  const end = e.end, rev = addD(end, -28), prac = addD(START, Math.round(diff(START, rev) * 0.62));
+  return [
+    { k: 'learn', camp: 'Base camp', name: 'Learn', from: START, to: addD(prac, -1), hex: '#5acbff', ico: '⛺', desc: 'Cover every subject once: lessons, then questions on what you just read.' },
+    { k: 'practice', camp: 'Camp 2', name: 'Practise', from: prac, to: addD(rev, -1), hex: '#167adf', ico: '🏕️', desc: 'Mostly PYQs and timed sets, with a Grand Test every 2 weeks.' },
+    { k: 'revise', camp: 'Summit push', name: 'Revise', from: rev, to: addD(end, -1), hex: '#ea8616', ico: '🧗', desc: 'No new topics. Flashcards, your mistakes and full mock exams.' },
+  ];
+}
+const phaseOf = d => { const p = phases(); return p ? p.find(x => d >= x.from && d < addD(x.to, 1)) || null : null; };
+function isMock(d) { const p = phases(); if (!p || d.getDay() !== 0 || d < p[1].from || d >= exam().end) return false; return Math.floor(diff(wkStart(p[1].from), d) / 7) % 2 === 1; }
+const isExam = d => { const e = exam(); return e.kind === 'date' && same(d, e.v); };
+const weekNo = d => Math.floor(diff(wkStart(START), wkStart(d)) / 7) + 1;
+const totalWeeks = () => { const e = exam(); return e.kind === 'none' ? null : weekNo(e.end); };
+function rec(d) {
+  if (d < START) return { st: 'before' };
+  if (d > TODAY && !same(d, TODAY)) return { st: 'future' };
+  if (same(d, TODAY)) return { st: 'today', min: 14, done: 1 };
+  const n = (d.getDate() * 7 + d.getMonth() * 3) % 13;
+  if (n === 9 || n === 4) return { st: 'none', min: 0, done: 0 };
+  if (n === 2 || n === 11) return { st: 'partial', min: 10, done: 1 };
+  return { st: 'done', min: [35, 20, 45, 25, 30, 50, 18, 40, 28][n % 9], done: 3 };
+}
+// live activity types + surfaces (weekPlanDisplay.tsx)
+const SURF = { pyqs: ['#F9F8FF', '#E9E5FF', 'assets/quiz.webp'], exercises: ['#FEF8EC', '#FBECCA', 'assets/notes.webp'], flashcards: ['#F4F9FF', '#E5F1FF', 'assets/flashcards.webp'], video: ['#FFF8F7', '#FFE9E5', 'assets/youtube-tool.webp'] };
+const SUBJ = [['Physiology', '🫀', '#FDECEC', '#F6C9C9'], ['Pharmacology', '💊', '#F0E9FB', '#DCCDF5'], ['Pathology', '🔬', '#E8F4FB', '#C4E2F4'], ['Anatomy', '🦴', '#FBF3E6', '#F0DDB8'], ['Microbiology', '🦠', '#EAF7EE', '#C8EBD3'], ['Medicine', '🩺', '#EAF0FB', '#C9D8F4']];
+function plan(d) {
+  const p = phaseOf(d), k = p ? p.k : 'learn', s = SUBJ[(d.getDate() + d.getMonth()) % 6], s2 = SUBJ[(d.getDate() + d.getMonth() + 2) % 6];
+  if (isMock(d)) return { subj: [s], acts: [['pyqs', 'Grand Test', '0/200 questions', 120]] };
+  if (k === 'learn') return { subj: [s], acts: [['exercises', 'Lesson & Exercises', `${s[0]}: next chapter`, 12], ['pyqs', 'PYQs', '0/20 questions', 15], ['flashcards', 'Flashcards', '0/30 cards', 10]] };
+  if (k === 'practice') return { subj: [s, s2], acts: [['pyqs', 'PYQs', '0/40 questions', 30], ['flashcards', 'Flashcards', '0/40 cards', 12]] };
+  return { subj: SUBJ.slice(0, 2), acts: [['flashcards', 'Flashcards', '0/60 cards', 18], ['pyqs', 'Timed set', '0/50 questions', 35]] };
+}
+const planMin = d => plan(d).acts.reduce((a, x) => a + x[3], 0);
+const CHECK = `<svg width="11" height="11" viewBox="0 0 24 24" style="fill:none;stroke:#fff;stroke-width:3.6;stroke-linecap:round;stroke-linejoin:round"><path d="m5 12 5 5 9-10"/></svg>`;
+const CHEV = (c = '#272625', s = 16, d = 'r') => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" style="fill:none;stroke:${c};stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round"><path d="${d === 'r' ? 'm9 6 6 6-6 6' : 'm6 9 6 6 6-6'}"/></svg>`;
+const FLAG = (c = '#fff', w = 14, pole = c) => `<svg width="${w}" height="${w * 1.3}" viewBox="0 0 18 24"><line x1="2.5" y1="1" x2="2.5" y2="23" stroke="${pole}" stroke-width="2.5" stroke-linecap="round"/><path d="M3.5 2 L17 7.5 L3.5 13 Z" fill="${c}"/></svg>`;
+const CAL = `<svg width="24" height="26" viewBox="0 0 24 24"><defs><linearGradient id="cg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1C91F2"/><stop offset="1" stop-color="#0466B8"/></linearGradient></defs><rect x="3.5" y="5" width="17" height="15.5" rx="4" fill="none" stroke="url(#cg)" stroke-width="2"/><path d="M3.5 10h17M8 3v4M16 3v4" stroke="url(#cg)" stroke-width="2" stroke-linecap="round"/><circle cx="8.5" cy="14.5" r="1.3" fill="url(#cg)"/><circle cx="12" cy="14.5" r="1.3" fill="url(#cg)"/></svg>`;
+
+// ---------- live components ----------
+function weekStrip(center) {
+  let h = ''; const ws = addD(center, -10);
+  for (let i = 0; i < 21; i++) {
+    const d = addD(ws, i), r = rec(d), t = same(d, TODAY), sel = same(d, S.sel);
+    const prog = r.st === 'future' || r.st === 'before' ? 0 : r.done / 3;
+    h += `<div class="dcell ${t ? 'today' : ''} ${sel ? 'sel' : ''} ${isExam(d) ? 'exam' : ''}" data-day="${d.getTime()}"><span class="l">${WD[(d.getDay() + 6) % 7].slice(0, 3)}</span><span class="n">${d.getDate()}</span><span class="b"><i style="width:${prog * 100}%"></i></span></div>`;
+  }
+  return `<div class="strip"><div class="ctl tap" data-act="month">${CAL}</div><div class="days" data-strip>${h}</div></div>`;
+}
+function dayDetail(d) {
+  const r = rec(d), t = same(d, TODAY), pl = plan(d), p = phaseOf(d), e = exam();
+  const eb = `<div class="eyebrow" style="margin-bottom:10.5px">${t ? 'Today' : DAYN[d.getDay()]} · ${MON[d.getMonth()]} ${d.getDate()}</div>`;
+  if (isExam(d)) return eb + `<div class="inset" style="padding:24px;text-align:center"><div style="width:56px;height:56px;margin:0 auto;border-radius:99px;background:#167ADF;display:flex;align-items:center;justify-content:center">${FLAG('#fff', 24)}</div><div style="margin-top:12px;font:700 17.5px/1.3 var(--font);color:#272625">Summit day: NEET-PG</div><div style="margin-top:4px;font:400 15px/1.4 var(--font);color:#52504C">No plan today. Trust the climb.</div></div>`;
+  if (r.st === 'before') return eb + `<div class="note">Before your plan started on ${fmt(START)}.</div>`;
+  if (e.kind !== 'none' && d > (e.win ? e.win[1] : e.end)) return eb + `<div class="note">After your exam. Nothing planned.</div>`;
+  const past = ['done', 'partial', 'none'].includes(r.st), nDone = r.done || 0;
+  const subj = pl.subj.map(s => `<div class="subj" style="border-color:${s[3]}"><div class="tile" style="background:${s[2]}">${s[1]}</div><b>${s[0]}</b><span style="padding-right:14px">${CHEV('#141B34', 20, 'd')}</span></div>`).join('');
+  const total = planMin(d);
+  const rows = `<div class="arow" style="background:#FCFCFC;border-color:#F5F5F5"><div class="ic"><img src="assets/stopwatch.webp"></div><div class="tx"><div class="t" style="font-weight:600">${total >= 60 ? `${Math.floor(total / 60)} hr ${total % 60} min` : total + ' min'}</div><div class="s">Study time</div></div></div>` +
+    pl.acts.map((a, i) => `<div class="arow" style="background:${SURF[a[0]][0]};border-color:${SURF[a[0]][1]}"><div class="ic"><img src="${SURF[a[0]][2]}"></div><div class="tx"><div class="t">${a[1]}</div><div class="s">${i < nDone ? a[2].replace(/^0\/(\d+)/, '$1/$1') : a[2]}</div></div><div class="m">${a[3]} min ${i < nDone ? `<span class="ck">${CHECK}</span>` : '<span class="todo"></span>'}</div></div>`).join('');
+  const foot = t ? `<button class="cta press" style="margin-top:6px">${nDone ? 'Continue plan' : 'Start plan'}</button>` : past ? (r.st === 'done' ? '' : `<button class="cta press" style="margin-top:6px">Continue plan</button>`) : `<div class="note" style="margin-top:4px">You can start this plan on ${DAYN[d.getDay()]}.</div>`;
+  return eb + `<div class="wlabel">What you'll study<span class="edit">EDIT</span></div>${subj}<div class="wlabel" style="margin-top:14px">Your activities</div>${rows}<div class="prog" style="margin:-3px 0 12px">${Math.min(nDone, pl.acts.length)} of ${pl.acts.length} activities complete</div>${foot}`;
+}
+
+// ---------- the mountain (new) ----------
+
+// ---------- the mountain (new) ----------
+// One vector scene, so the camera can zoom without blurring. Oncourse blues instead of Vidia's lilac.
+const W = 1100, H = 1560, PEAK = { x: 550, y: 170 }, OX = (W - 390) / 2;
+function rnd(i) { const x = Math.sin(i * 999.7) * 43758.5; return x - Math.floor(x); }
+function halfWidth(y) { return 30 + (y - PEAK.y) / (H - PEAK.y) * 300; }
+function trailPoints() {
+  const n = 13, top = PEAK.y + 22, bot = H - 30, pts = [{ x: PEAK.x - 45, y: H + 20 }];
+  for (let i = 0; i <= n; i++) {
+    const y = bot - i * (bot - top) / n, amp = Math.min(130, halfWidth(y) * 0.5);
+    pts.push(i === n ? { x: PEAK.x, y: top } : { x: PEAK.x + (i % 2 ? 1 : -1) * amp * (i === 0 ? 0.3 : 1), y });
+  }
+  return pts;
+}
+function catmull(pts, k = 0.22) {
+  let d = `M ${pts[0].x} ${pts[0].y}`;
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p0 = pts[i - 1] || pts[i], p1 = pts[i], p2 = pts[i + 1], p3 = pts[i + 2] || p2;
+    d += ` C ${p1.x + (p2.x - p0.x) * k} ${p1.y + (p2.y - p0.y) * k}, ${p2.x - (p3.x - p1.x) * k} ${p2.y - (p3.y - p1.y) * k}, ${p2.x} ${p2.y}`;
+  }
+  return d;
+}
+const TRAIL = catmull(trailPoints());
+let TP = null, TL = 0, T0 = 0;
+function trailInit() {
+  if (TP) return;
+  const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); s.style.cssText = 'position:absolute;width:0;height:0';
+  TP = document.createElementNS('http://www.w3.org/2000/svg', 'path'); TP.setAttribute('d', TRAIL); s.appendChild(TP); document.body.appendChild(s);
+  TL = TP.getTotalLength();
+  // where the trail enters the scene (the tail starts below the frame)
+  let lo = 0; while (TP.getPointAtLength(lo).y > H - 30) lo += 4; T0 = lo;
+}
+// t = 0 at the trailhead (plan start), 1 at the summit (exam)
+function at(t) { trailInit(); const p = TP.getPointAtLength(T0 + clamp(t, 0, 1) * (TL - T0)); return { x: p.x, y: p.y }; }
+function tOf(d) { const e = exam(); if (e.kind === 'none') return clamp(diff(START, d) / 240, 0, .92); return clamp(diff(START, d) / diff(START, e.end), 0, 1); }
+
+function mountainArt(opts = {}) {
+  const contours = [], pines = [], clouds = [];
+  for (let k = 0; k < 16; k++) {
+    const y = PEAK.y + 160 + k * 82, hw = halfWidth(y), a = 10 + rnd(k) * 14;
+    contours.push(`<path d="M ${PEAK.x - hw - 40} ${y} C ${PEAK.x - hw / 2} ${y - a}, ${PEAK.x - hw / 4} ${y + a}, ${PEAK.x} ${y - a / 2} S ${PEAK.x + hw / 2} ${y + a}, ${PEAK.x + hw + 40} ${y - a}" fill="none" stroke="#fff" stroke-opacity="${0.28 + (k % 3) * 0.06}" stroke-width="1.3"/>`);
+  }
+  for (let i = 0; i < 26; i++) {
+    const side = i % 2 ? 1 : -1, y = 520 + rnd(i + 3) * (H - 620), hw = halfWidth(y);
+    const x = PEAK.x + side * (hw * (0.62 + rnd(i + 9) * 0.35)), s = 9 + rnd(i) * 8;
+    if (x < 6 || x > W - 6) continue;
+    pines.push(`<path d="M ${x} ${y - s * 1.6} L ${x + s * .7} ${y} L ${x - s * .7} ${y} Z" fill="#3E7BC0" fill-opacity=".55"/><rect x="${x - 1}" y="${y}" width="2" height="${s * .35}" fill="#3E7BC0" fill-opacity=".5"/>`);
+  }
+  [[52, 330, 1], [318, 410, .8], [70, 760, .9], [330, 980, 1.1], [40, 1260, .8], [-120, 250, 1.3], [520, 300, 1.2], [-160, 620, 1], [560, 700, 1.1]].forEach(([x0, y, s]) => { const x = x0 + OX; clouds.push(`<g transform="translate(${x} ${y}) scale(${s})" opacity=".95"><path d="M -34 8 Q -34 -6 -20 -6 Q -16 -20 0 -18 Q 12 -28 24 -14 Q 38 -14 38 0 Q 38 8 30 8 Z" fill="#fff" stroke="#A9CBEF" stroke-width="1.2"/></g>`); });
+  const p = PEAK;
+  return `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#B5D6F6"/><stop offset=".22" stop-color="#DCEBFB"/><stop offset=".5" stop-color="#EEF6FE"/><stop offset="1" stop-color="#F3F8FD"/></linearGradient>
+    <linearGradient id="mt" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7FB2E8"/><stop offset=".18" stop-color="#A9CCF2"/><stop offset=".6" stop-color="#CFE3F8"/><stop offset="1" stop-color="#E2EEFA"/></linearGradient>
+    <linearGradient id="far" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#C6DDF6"/><stop offset="1" stop-color="#E6F0FB"/></linearGradient>
+    <linearGradient id="hill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#D3EEF0"/><stop offset="1" stop-color="#BFE2E8"/></linearGradient>
+  </defs>
+  <rect width="${W}" height="${H}" fill="url(#sky)"/>
+  <path d="M ${p.x - 470} ${p.y + 520} L ${p.x - 330} ${p.y + 200} L ${p.x - 250} ${p.y + 300} L ${p.x - 160} ${p.y + 240} L ${p.x - 20} ${p.y + 520} Z" fill="url(#far)"/>
+  <path d="M ${p.x + 20} ${p.y + 520} L ${p.x + 170} ${p.y + 230} L ${p.x + 240} ${p.y + 310} L ${p.x + 330} ${p.y + 190} L ${p.x + 480} ${p.y + 520} Z" fill="url(#far)"/>
+  <path d="M -80 ${H} L ${p.x - 150} ${p.y + 520} L ${p.x - 70} ${p.y + 210} L ${p.x - 26} ${p.y + 44} L ${p.x} ${p.y} L ${p.x + 34} ${p.y + 56} L ${p.x + 82} ${p.y + 230} L ${p.x + 170} ${p.y + 560} L ${W + 80} ${H} Z" fill="url(#mt)"/>
+  <path d="M ${p.x} ${p.y} L ${p.x + 34} ${p.y + 56} L ${p.x + 82} ${p.y + 230} L ${p.x + 170} ${p.y + 560} L ${W + 80} ${H} L ${p.x + 60} ${H} L ${p.x + 40} ${p.y + 600} L ${p.x + 14} ${p.y + 220} Z" fill="#5E97D6" fill-opacity=".18"/>
+  <path d="M ${p.x} ${p.y} L ${p.x + 34} ${p.y + 56} L ${p.x + 22} ${p.y + 50} L ${p.x + 12} ${p.y + 72} L ${p.x - 2} ${p.y + 54} L ${p.x - 14} ${p.y + 74} L ${p.x - 26} ${p.y + 44} Z" fill="#fff"/>
+  ${contours.join('')}
+  <path d="M -10 ${H - 170} C ${OX + 80} ${H - 230}, ${OX + 170} ${H - 150}, ${OX + 250} ${H - 200} S ${OX + 380} ${H - 230}, ${W + 10} ${H - 210} L ${W + 10} ${H} L -10 ${H} Z" fill="url(#hill)"/>
+  <path d="M -10 ${H - 80} C ${OX + 100} ${H - 130}, ${OX + 220} ${H - 50}, ${W + 10} ${H - 110} L ${W + 10} ${H} L -10 ${H} Z" fill="#B4DAE2"/>
+  ${pines.join('')}${clouds.join('')}
+  ${opts.trail === false ? '' : trailSvg()}
+  ${summitCloud()}
+  </svg>`;
+}
+function trailSvg() {
+  trailInit();
+  const tt = tOf(TODAY), lt = T0 + tt * (TL - T0);
+  return `<path d="${TRAIL}" fill="none" stroke="#fff" stroke-opacity=".75" stroke-width="9" stroke-linecap="round"/>
+  <path d="${TRAIL}" fill="none" stroke="#1961b4" stroke-opacity=".5" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="1.5 8"/>
+  <path d="${TRAIL}" fill="none" stroke="#167adf" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="${lt} ${TL * 2}"/>`;
+}
+// range / month / no date: the summit sits in cloud until the date is firm
+function summitCloud() {
+  const e = exam(); if (e.kind === 'date') return '';
+  const o = e.kind === 'none' ? 1 : e.kind === 'range' ? .92 : .7;
+  return `<g opacity="${o}"><ellipse cx="${PEAK.x}" cy="${PEAK.y + 30}" rx="150" ry="62" fill="#fff"/><ellipse cx="${PEAK.x - 90}" cy="${PEAK.y + 60}" rx="80" ry="38" fill="#fff"/><ellipse cx="${PEAK.x + 96}" cy="${PEAK.y + 52}" rx="86" ry="40" fill="#fff"/></g>`;
+}
+
+// ---------- A · climb (camera zoom on one scene) ----------
+
+const RC = 108.38;
+const RING = f => `<svg viewBox="0 0 38 38" width="38" height="38"><circle cx="19" cy="19" r="17.25" fill="none" stroke="#E8EEF6" stroke-width="3.5"/>${f > 0 ? `<circle cx="19" cy="19" r="17.25" fill="none" stroke="#1F7AE0" stroke-width="3.5" stroke-linecap="round" stroke-dasharray="${RC}" stroke-dashoffset="${(RC * (1 - Math.min(1, f))).toFixed(2)}"/>` : ''}</svg>`;
+const PH_TXT = { learn: '#1e92f2', practice: '#167adf', revise: '#c3440b' };
+
+// paper grain for the painted worlds
+(() => { const c = document.createElement('canvas'); c.width = c.height = 180; const x = c.getContext('2d'), im = x.createImageData(180, 180); for (let i = 0; i < im.data.length; i += 4) { const v = 110 + Math.random() * 145; im.data[i] = im.data[i + 1] = im.data[i + 2] = v; im.data[i + 3] = 255; } x.putImageData(im, 0, 0); document.documentElement.style.setProperty('--grain', `url(${c.toDataURL()})`); })();
+// ---------- state ----------
+S.view = TODAY; S.folded = false; S.mod = 'mountain'; S.ml = 0; S.lay = 'card';
+
+// ---------- calendar (Exam calendar v10) ----------
+function renderCal() {
+  const e = exam(), v = new Date(S.view.getFullYear(), S.view.getMonth(), 1);
+  let cells = '';
+  const dayCell = (d, out) => { const r = rec(d), t = same(d, TODAY), sel = same(d, S.sel), ex = isExam(d); const f = r.min != null ? r.min / 30 : 0; return `<div class="d ${r.st === 'future' || r.st === 'before' ? 'fut' : ''} ${t ? 'today' : ''} ${sel ? 'sel' : ''} ${out ? 'out' : ''}" data-day="${d.getTime()}"><div class="sq">${r.min != null && !out ? RING(f) : ''}<span class="n">${d.getDate()}</span></div>${ex && !out ? `<span class="flag">${FLAG('#fff', 9)}</span>` : ''}</div>`; };
+  if (S.folded) { const ws = wkStart(S.sel); for (let i = 0; i < 7; i++) cells += dayCell(addD(ws, i), false); }
+  else { const off = (v.getDay() + 6) % 7, start = addD(v, -off); for (let i = 0; i < 42; i++) { const d = addD(start, i); if (i >= 35 && d.getMonth() !== v.getMonth()) break; cells += dayCell(d, d.getMonth() !== v.getMonth()); } }
+  const head = S.folded ? S.sel : v;
+  document.getElementById('cal').innerHTML = `<div class="calhead"><div class="round tap press" id="close"><svg width="16" height="16" viewBox="0 0 24 24" style="fill:none;stroke:#1F2937;stroke-width:2.4;stroke-linecap:round"><path d="M6 6l12 12M18 6 6 18"/></svg></div><div class="upd tap press" data-act="date"><svg width="18" height="18" viewBox="0 0 24 24" style="fill:none;stroke:#1565C8;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4M9 15l2 2 4-4"/></svg>Update exam date</div></div>
+    <div class="month"><b>${MON[head.getMonth()]}<em>${head.getFullYear()}</em></b><span class="fold tap" id="fold"><svg width="20" height="20" viewBox="0 0 24 24" style="fill:none;stroke:#9AA3AF;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;transform:rotate(${S.folded ? 0 : 180}deg)"><path d="m6 9 6 6 6-6"/></svg></span>
+    <div class="arrows"><div class="round tap" id="prev"><svg width="15" height="15" viewBox="0 0 24 24" style="fill:none;stroke:#1F2937;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round"><path d="m15 6-6 6 6 6"/></svg></div><div class="round tap" id="next"><svg width="15" height="15" viewBox="0 0 24 24" style="fill:none;stroke:#1F2937;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round"><path d="m9 6 6 6-6 6"/></svg></div></div></div>
+    <div class="wd">${WD.map((w, i) => `<span class="${i === (TODAY.getDay() + 6) % 7 ? 't' : ''}">${w}</span>`).join('')}</div>
+    <div class="grid">${cells}</div>
+    ${S.folded ? '' : `<div class="legend"><svg width="12" height="12" viewBox="0 0 38 38"><circle cx="19" cy="19" r="15" fill="none" stroke="#E8EEF6" stroke-width="7"/><path d="M19 4 A15 15 0 0 1 34 19" fill="none" stroke="#1F7AE0" stroke-width="7"/></svg>Ring = study time · full at 30 min</div>`}
+    <div class="grabber tap" id="grab"><span></span></div>`;
+  const C = document.getElementById('cal');
+  C.querySelector('#close').onclick = closeSheet;
+  C.querySelector('#fold').onclick = C.querySelector('#grab').onclick = () => { S.folded = !S.folded; renderCal(); };
+  C.querySelector('#prev').onclick = () => { if (S.folded) S.sel = addD(S.sel, -7); else S.view = addM(v, -1); renderCal(); if (S.folded) renderDay(); };
+  C.querySelector('#next').onclick = () => { if (S.folded) S.sel = addD(S.sel, 7); else S.view = addM(v, 1); renderCal(); if (S.folded) renderDay(); };
+  bind(C);
+}
+
+// ---------- day plan (live components) ----------
+function renderDay() {
+  const d = S.sel, t = same(d, TODAY);
+  document.getElementById('day').innerHTML = `<div class="dayh"><b>${DAYN[d.getDay()]}, ${MON[d.getMonth()]} ${d.getDate()}</b>${t ? '<span class="chip">Today</span>' : ''}</div><div class="pcard">${dayDetail(d)}</div>`;
+  bind(document.getElementById('day'));
+}
+
+// ---------- the journey card (new) ----------
+// A window onto one world from the physical world. One camera, three stops:
+// 0 = close on you, this week's days on the path (default) · 1 = the months around you · 2 = the whole way to the goal.
+// No phases: we don't know when someone moves from learning to revising, so the path only shows facts (days, months, the date).
+let CW = 362, CH = [244, 300, 430];
+// ways to present the same world under the calendar
+const LAYS = [
+  { k: 'card', name: 'Card', tag: 'Framed card, +/− on the picture', cw: 362, ch: [244, 300, 430], ctl: 'pm', head: 'overlay', inset: 0,
+    desc: 'The v5 card: a framed picture with its own zoom buttons. The headline floats on the picture.' },
+  { k: 'caption', name: 'Picture + caption', tag: 'Text and zoom below the picture', cw: 362, ch: [200, 250, 380], ctl: 'seg', head: 'foot', inset: 0,
+    desc: 'The picture stays clean: no text on it. A white caption row underneath holds one line and a Week · Months · All switch, like Apple Fitness or Maps cards.' },
+  { k: 'bleed', name: 'Full-bleed', tag: 'The world runs edge to edge', cw: 390, ch: [270, 340, 500], ctl: 'float', head: 'overlay', inset: 30,
+    desc: 'No card. The world fills the width and tucks under the calendar\'s rounded edge; the day plan slides over it as a sheet. Feels like a place, not a widget.' },
+  { k: 'strip', name: 'Peek → expand', tag: 'Short strip that opens up', cw: 362, ch: [170, 360, 600], ctl: 'cta', head: 'overlay', inset: 0,
+    desc: 'Quiet by default: a short strip with you and this week. One button opens the whole journey, folding the calendar and pushing the plan down; one button brings you back.' },
+];
+const lay = () => LAYS.find(l => l.k === S.lay);
+const MODS = [
+  { k: 'mountain', whole: 'See the whole climb', name: 'Mountain', tag: 'Climb to the summit', unit: 'to the summit', goalWord: 'summit',
+    desc: 'The v2 climb, now inside the card. Zoomed in, Rezzy stands on the trail with this week\'s days as stepping stones. Pull back and the slope opens up with month markers, then the whole mountain with the flag and the exam date.',
+    pros: 'Universal: the top is where you need to go. Effort reads as climbing.', cons: 'Needs a proper illustration pass to feel premium.' },
+  { k: 'road', whole: 'See the whole road', name: 'Road ahead', tag: 'Drive to the city', unit: 'to NEET-PG', goalWord: 'city',
+    desc: 'A country road winding to a city on the horizon. Close up, it\'s the stretch of road you\'re on this week. Pull back and the road narrows into the distance, with the city (the exam) where it meets the sky.',
+    pros: 'Calm. A far horizon doesn\'t feel like failing, so it suits long timelines.', cons: 'Less "achievement" than a summit.' },
+  { k: 'sea', whole: 'See the whole crossing', name: 'Lighthouse', tag: 'Sail to the light', unit: 'to the lighthouse', goalWord: 'lighthouse',
+    desc: 'You set off from the beach and sail toward a lighthouse. Close up, this week\'s days are buoys on your course. Pull back to see the whole crossing. With no fixed date, the lighthouse sits in fog, which is exactly what fog means at sea.',
+    pros: 'Fog for an unknown date is natural, not a UI trick. The light reads as "guiding you".', cons: 'Water has fewer landmarks, so the close view relies on the buoys.' },
+  { k: 'map', whole: 'See the whole map', name: 'Treasure map', tag: 'X marks the exam', unit: 'to the X', goalWord: 'X',
+    desc: 'A hand-drawn map with a dashed route from where you started to a big X. Close up, your footsteps this week. Pull back for the whole map: forest, river, bridge and the X.',
+    pros: 'Zoom feels native: it\'s a map. Playful but still clear.', cons: 'More "game" in tone. The X is a reward metaphor, the exam is a test.' },
+];
+const mod = () => MODS.find(m => m.k === S.mod);
+function progress() { return tAt(TODAY); }
+function tAt(d) { const e = exam(); if (e.kind === 'none') return clamp(diff(START, d) / 240, 0, 1); return clamp(diff(START, d) / diff(START, e.end), 0, 1); }
+
+// a reusable sampler for path-based worlds
+const SAMP = {};
+function sampler(key, d) { if (SAMP[key] && SAMP[key].d === d) return SAMP[key]; const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); s.style.cssText = 'position:absolute;width:0;height:0'; const p = document.createElementNS('http://www.w3.org/2000/svg', 'path'); p.setAttribute('d', d); s.appendChild(p); document.body.appendChild(s); const L = p.getTotalLength(); SAMP[key] = { d, L, at: t => { const q = p.getPointAtLength(clamp(t, 0, 1) * L); return { x: q.x, y: q.y }; }, nrm: t => { const a = p.getPointAtLength(clamp(t - .002, 0, 1) * L), b = p.getPointAtLength(clamp(t + .002, 0, 1) * L), l = Math.hypot(b.x - a.x, b.y - a.y) || 1; return { x: -(b.y - a.y) / l, y: (b.x - a.x) / l }; } }; return SAMP[key]; }
+function smoothPath(pts, k = .2) { let d = `M ${pts[0][0]} ${pts[0][1]}`; for (let i = 0; i < pts.length - 1; i++) { const p0 = pts[i - 1] || pts[i], p1 = pts[i], p2 = pts[i + 1], p3 = pts[i + 2] || p2; d += ` C ${p1[0] + (p2[0] - p0[0]) * k} ${p1[1] + (p2[1] - p0[1]) * k}, ${p2[0] - (p3[0] - p1[0]) * k} ${p2[1] - (p3[1] - p1[1]) * k}, ${p2[0]} ${p2[1]}`; } return d; }
+const P = () => { const w = WORLDS[S.mod]; return sampler(S.mod, w.d); };
+// distance from a point to the path (for keeping props off the road)
+function nearPath(Pa, x, y, r) { if (!Pa.pts) Pa.pts = [...Array(201)].map((_, i) => Pa.at(i / 200)); for (const q of Pa.pts) if ((q.x - x) ** 2 + (q.y - y) ** 2 < r * r) return true; return false; }
+const BIG = 5000;
+const ext = (fill, y0 = -BIG, y1 = BIG) => `<rect x="${-BIG}" y="${y0}" width="${2 * BIG}" height="${y1 - y0}" fill="${fill}"/>`;
+
+// ---- illustrated worlds (new): painted look in the Oncourse style — soft skies, layered haze, lit and shadow faces ----
+// Every world is drawn inside 0..W × 0..H; the camera never leaves it (cover-fit + clamp).
+const nss = 'vector-effect="non-scaling-stroke"';
+const RR = (a, b, i) => a + (b - a) * rnd(i);
+function fogBlob(id, x, y, r, o) { return `<defs><filter id="fb-${id}" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="${r * .18}"/></filter></defs><g filter="url(#fb-${id})" opacity="${o}"><ellipse cx="${x}" cy="${y}" rx="${r}" ry="${r * .5}" fill="#fff"/><ellipse cx="${x - r * .7}" cy="${y + r * .25}" rx="${r * .6}" ry="${r * .32}" fill="#fff"/><ellipse cx="${x + r * .7}" cy="${y + r * .2}" rx="${r * .62}" ry="${r * .34}" fill="#fff"/></g>`; }
+// shared painting kit
+const kit = id => `<filter id="${id}-b6" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="6"/></filter>
+  <filter id="${id}-b16" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="16"/></filter>
+  <filter id="${id}-b40" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="40"/></filter>
+  <radialGradient id="${id}-puff" cx=".42" cy=".3" r=".75"><stop offset="0" stop-color="#fff"/><stop offset=".55" stop-color="#fff"/><stop offset="1" stop-color="#D3E2F3"/></radialGradient>`;
+function cloud(id, x, y, s, o = 1) {
+  const puffs = [[-62, 8, 34], [-28, -14, 40], [12, -26, 48], [54, -8, 38], [84, 10, 26], [-94, 16, 22]];
+  return `<g transform="translate(${x} ${y}) scale(${s})" opacity="${o}"><ellipse cx="4" cy="26" rx="118" ry="16" fill="#9FB9D8" opacity=".35" filter="url(#${id}-b6)"/>${puffs.map(([dx, dy, r]) => `<circle cx="${dx}" cy="${dy}" r="${r}" fill="url(#${id}-puff)"/>`).join('')}<path d="M-112 18 Q 0 32 108 18 L 108 30 L -112 30 Z" fill="#DCE8F5"/></g>`;
+}
+function pine(x, y, h, lit, dark) { const w = h * .4; return `<rect x="${x - h * .03}" y="${y - h * .08}" width="${h * .06}" height="${h * .12}" fill="#5B4636"/><path d="M${x} ${y - h} L${x + w * .55} ${y - h * .5} L${x + w * .34} ${y - h * .5} L${x + w} ${y} L${x - w} ${y} L${x - w * .34} ${y - h * .5} L${x - w * .55} ${y - h * .5} Z" fill="${dark}"/><path d="M${x} ${y - h} L${x + w * .55} ${y - h * .5} L${x + w * .34} ${y - h * .5} L${x + w} ${y} L${x} ${y} Z" fill="${lit}"/>`; }
+function tree(x, y, r, lit, dark) { return `<ellipse cx="${x + r * .4}" cy="${y + r * .1}" rx="${r * 1.1}" ry="${r * .3}" fill="#24493A" opacity=".2"/><rect x="${x - r * .1}" y="${y - r * .8}" width="${r * .2}" height="${r * .85}" fill="#6E5140"/><circle cx="${x}" cy="${y - r * 1.25}" r="${r}" fill="${dark}"/><circle cx="${x + r * .28}" cy="${y - r * 1.45}" r="${r * .66}" fill="${lit}"/>`; }
+function wavePath(y, amp, per, ph, x0, x1, bottom) { let d = `M${x0} ${bottom} L${x0} ${y}`; for (let x = x0; x <= x1; x += 30) d += ` L${x} ${(y + Math.sin(x / per + ph) * amp + Math.sin(x / (per * .43) + ph * 2) * amp * .35).toFixed(1)}`; return d + ` L${x1} ${bottom} Z`; }
+function waveTop(y, amp, per, ph, x0, x1) { let d = ''; for (let x = x0; x <= x1; x += 30) d += `${d ? ' L' : 'M'}${x} ${(y + Math.sin(x / per + ph) * amp + Math.sin(x / (per * .43) + ph * 2) * amp * .35).toFixed(1)}`; return d; }
+const waveY = (x, y, amp, per, ph) => y + Math.sin(x / per + ph) * amp + Math.sin(x / (per * .43) + ph * 2) * amp * .35;
+function range(x0, x1, base, n, hmin, hmax, seed) { let d = `M${x0} ${base + 600} L${x0} ${base}`; for (let i = 0; i <= n; i++) { const x = x0 + (x1 - x0) * i / n, y = base - (i % 2 ? RR(hmin * .45, hmin * .8, seed + i) : RR(hmin, hmax, seed + i)); d += ` L${x.toFixed(0)} ${y.toFixed(0)}`; } return d + ` L${x1} ${base + 600} Z`; }
+const tuft = (x, y, s, c) => `<path d="M${x - 2 * s} ${y} q -1 ${-6 * s} ${-4 * s} ${-10 * s} M${x} ${y} q 0 ${-8 * s} ${1 * s} ${-13 * s} M${x + 2 * s} ${y} q 1 ${-6 * s} ${5 * s} ${-9 * s}" stroke="${c}" stroke-width="${1.3 * s}" fill="none" stroke-linecap="round"/>`;
+const flower = (x, y, r, c) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${c}"/><circle cx="${x}" cy="${y}" r="${r * .4}" fill="#FFE07A"/>`;
+
+function illoWorld(o) {
+  const w = {
+    bound: true, chip: o.chip, W: o.W, H: o.H, d: smoothPath(o.pts, o.tension ?? .2), goal: { x: o.goal[0], y: o.goal[1] }, flag: o.flag,
+    whole: { x0: o.whole[0], y0: o.whole[1], x1: o.whole[2], y1: o.whole[3] }, bg: o.bg, maxS: o.maxS, dayPx: o.dayPx,
+    art(e) {
+      if (!this._base) this._base = o.paint.call(this, sampler(o.id, this.d)); // the painting doesn't change; cache it
+      const Pa = sampler(o.id, this.d), lt = progress() * Pa.L, g = this.goal;
+      const fog = e.kind === 'date' ? '' : fogBlob(o.id, g.x + o.fog[0], g.y + o.fog[1], o.fog[2], e.kind === 'none' ? 1 : .9);
+      return `${this._base}${o.trail(this.d, lt, Pa.L, e)}${fog}`;
+    },
+  };
+  return w;
+}
+
+const WORLDS = {
+  // ---- mountain: meadow → forest → rock → snow, a dirt trail switching back to the summit ----
+  mountain: illoWorld({
+    id: 'mt', W: 1200, H: 1500, flag: true, maxS: 3, dayPx: 50, bg: '#CFE4F7',
+    pts: [[560, 1520], [600, 1450], [830, 1395], [420, 1335], [810, 1275], [450, 1210], [770, 1152], [520, 1094], [700, 1042], [596, 990], [668, 930], [560, 878], [706, 818], [580, 758], [702, 700], [598, 640], [690, 580], [612, 520], [672, 460], [616, 400], [652, 340], [614, 282], [604, 212]],
+    goal: [604, 196], whole: [0, 40, 1200, 1500], fog: [0, 70, 190],
+    paint(Pa) {
+      const id = 'mt', PK = { x: 604, y: 190 };
+      let farP = '', nearP = '', meadowTrees = '', flowers = '', tufts = '', rocks = '';
+      for (let i = 0; i < 70; i++) { const x = -20 + i * 18 + RR(-6, 6, i), y = waveY(x, 842, 22, 160, 1) + 6; farP += pine(x, y, RR(26, 40, i + 3), '#8FB3C2', '#6E95A8'); }
+      for (let r = 0; r < 3; r++) for (let i = 0; i < 64; i++) { const x = -30 + i * 20 + RR(-8, 8, i + r * 90), y = waveY(x, 905, 28, 200, 2.2) + 10 + r * 26 + RR(-6, 6, i + 7 * r), h = RR(34, 54, i + r * 40) + r * 8; if (nearPath(Pa, x, y - h * .4, 24)) continue; nearP += pine(x, y, h, ['#6FAE93', '#5E9F86', '#4F9078'][r], ['#3F7A68', '#346D5C', '#2B5F50'][r]); }
+      [[110, 1120, 28], [190, 1150, 22], [980, 1110, 30], [1060, 1150, 24], [140, 1330, 34], [1080, 1340, 36], [940, 1300, 26], [60, 1250, 28]].forEach(([x, y, r]) => meadowTrees += tree(x, y, r, '#8BC77C', '#5FA46A'));
+      for (let i = 0; i < 520; i++) { const x = RR(0, 1200, i * 3 + 1), y = RR(990, 1500, i * 5 + 2); if (nearPath(Pa, x, y, 16)) continue; flowers += flower(x, y, RR(2.5, 4.5, i), ['#FFFFFF', '#FFD86B', '#F7A8C4', '#C2B2F5', '#FFFFFF'][i % 5]); }
+      for (let i = 0; i < 420; i++) { const x = RR(0, 1200, i * 7 + 4), y = RR(980, 1500, i * 11 + 5); if (nearPath(Pa, x, y, 14)) continue; tufts += tuft(x, y, RR(.8, 1.5, i), ['#5E9E5A', '#6DAE63', '#4E8E4F'][i % 3]); }
+      // close-up detail right beside the trail
+      for (let i = 0; i < 360; i++) { const t = i / 360, q = Pa.at(t), n = Pa.nrm(t), sd = i % 2 ? 1 : -1, off = RR(12, 30, i + 50), x = q.x + n.x * off * sd, y = q.y + n.y * off * sd;
+        rocks += y < 820 ? `<ellipse cx="${x}" cy="${y}" rx="${RR(3, 7, i)}" ry="${RR(2, 4, i + 1)}" fill="#8EA3BF"/><ellipse cx="${x - 1}" cy="${y - 1.2}" rx="${RR(2, 4, i)}" ry="${RR(1, 2.2, i + 1)}" fill="#C9D6E7"/>` : i % 3 ? tuft(x, y, RR(.9, 1.4, i), '#4E8E4F') : flower(x, y, 3.2, ['#FFFFFF', '#FFD86B', '#F7A8C4'][i % 3]); }
+      const snowL = `M${PK.x} ${PK.y} L620 330 L602 384 L586 352 L562 404 L546 362 L516 384 L500 340 L560 240 Z`;
+      const snowR = `M${PK.x} ${PK.y} L650 236 L700 300 L768 396 L728 386 L708 426 L676 398 L646 446 L628 404 L620 330 Z`;
+      return `<defs>${kit(id)}
+          <linearGradient id="mt-sky" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="880"><stop offset="0" stop-color="#6AAAE9"/><stop offset=".38" stop-color="#A6CFF4"/><stop offset=".72" stop-color="#DCEBF8"/><stop offset="1" stop-color="#F7EFE2"/></linearGradient>
+          <radialGradient id="mt-sun" cx="960" cy="230" r="460" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#FFF6DA" stop-opacity=".95"/><stop offset=".35" stop-color="#FFF1D0" stop-opacity=".45"/><stop offset="1" stop-color="#FFF1D0" stop-opacity="0"/></radialGradient>
+          <linearGradient id="mt-rock" gradientUnits="userSpaceOnUse" x1="0" y1="190" x2="0" y2="1000"><stop offset="0" stop-color="#B8CEE8"/><stop offset="1" stop-color="#D3E2F2"/></linearGradient>
+          <linearGradient id="mt-shade" gradientUnits="userSpaceOnUse" x1="0" y1="190" x2="0" y2="1000"><stop offset="0" stop-color="#6F8FBE"/><stop offset="1" stop-color="#8FAAD0"/></linearGradient>
+          <linearGradient id="mt-haze" gradientUnits="userSpaceOnUse" x1="0" y1="560" x2="0" y2="860"><stop offset="0" stop-color="#EAF2FB" stop-opacity="0"/><stop offset="1" stop-color="#EAF2FB" stop-opacity=".9"/></linearGradient>
+          <linearGradient id="mt-lake" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#B7DDF5"/><stop offset="1" stop-color="#6FAEDF"/></linearGradient>
+          <linearGradient id="mt-mead" gradientUnits="userSpaceOnUse" x1="0" y1="940" x2="0" y2="1500"><stop offset="0" stop-color="#B4DB94"/><stop offset="1" stop-color="#7DBA6C"/></linearGradient></defs>
+        <rect width="1200" height="1500" fill="url(#mt-sky)"/><rect width="1200" height="900" fill="url(#mt-sun)"/>
+        ${cloud(id, 160, 170, 1.1)}${cloud(id, 1010, 120, .8, .9)}${cloud(id, 360, 420, .7, .85)}${cloud(id, 980, 470, .9, .9)}
+        <path d="${range(-60, 1260, 720, 22, 120, 300, 11)}" fill="#C8DBF0"/>
+        <path d="${range(-60, 1260, 790, 16, 90, 230, 41)}" fill="#AFC8E6"/>
+        <rect y="540" width="1200" height="330" fill="url(#mt-haze)"/>
+        <path d="M-100 1120 L140 820 L300 640 L420 470 L500 340 L560 240 L${PK.x} ${PK.y} L650 236 L700 300 L780 420 L880 560 L1000 700 L1120 820 L1300 960 L1300 1200 L-100 1200 Z" fill="url(#mt-rock)"/>
+        <path d="M${PK.x} ${PK.y} L560 240 L500 340 L420 470 L300 640 L140 820 L-100 1120 L540 1120 L600 900 L560 760 L612 600 L576 470 L620 330 Z" fill="url(#mt-shade)"/>
+        <path d="M700 300 L758 520 L722 700 L760 900 M820 470 L896 690 L870 860 M520 420 L470 600 L500 760 M420 560 L360 720" fill="none" stroke="#5F7FAE" stroke-opacity=".35" stroke-width="4" stroke-linecap="round"/>
+        <path d="M640 520 L700 600 M690 650 L760 720 M560 640 L520 700" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="3" stroke-linecap="round"/>
+        <path d="${snowL}" fill="#DDE8F6"/><path d="${snowR}" fill="#fff"/>
+        <path d="M740 470 L790 500 L770 512 L800 540 L752 530 Z M560 520 L600 540 L570 556 Z M470 500 L500 520 L462 532 Z M860 600 L900 620 L880 634 Z" fill="#F2F7FD"/>
+        <g filter="url(#mt-b16)" opacity=".75">${[...Array(9)].map((_, i) => `<ellipse cx="${i * 150 - 20}" cy="${808 + (i % 2) * 14}" rx="150" ry="26" fill="#fff"/>`).join('')}</g>
+        <path d="${wavePath(842, 22, 160, 1, -40, 1240, 1500)}" fill="#86AEC0"/>${farP}
+        <path d="${wavePath(905, 28, 200, 2.2, -40, 1240, 1500)}" fill="#4A8A77"/>${nearP}
+        <path d="${wavePath(968, 22, 260, .5, -40, 1240, 1500)}" fill="url(#mt-mead)"/>
+        <path d="${waveTop(968, 22, 260, .5, -40, 1240)}" fill="none" stroke="#D6EFB8" stroke-width="6" opacity=".7"/>
+        <ellipse cx="260" cy="1022" rx="170" ry="34" fill="url(#mt-lake)"/><path d="M150 1020 Q 260 1006 370 1020" stroke="#fff" stroke-opacity=".6" stroke-width="3" fill="none"/><path d="M240 1006 L262 1034 L284 1008 Z" fill="#fff" opacity=".35"/>
+        <path d="${wavePath(1090, 30, 300, 1.7, -40, 1240, 1500)}" fill="#98CB80"/><path d="${waveTop(1090, 30, 300, 1.7, -40, 1240)}" fill="none" stroke="#C9E8A8" stroke-width="5" opacity=".7"/>
+        <path d="${wavePath(1240, 34, 340, 3, -40, 1240, 1500)}" fill="#88C175"/><path d="${waveTop(1240, 34, 340, 3, -40, 1240)}" fill="none" stroke="#BFE39C" stroke-width="5" opacity=".7"/>
+        <path d="${wavePath(1390, 28, 280, .9, -40, 1240, 1500)}" fill="#77B467"/>
+        ${meadowTrees}${tufts}${flowers}${rocks}`;
+    },
+    trail: (d, lt, L) => `<path d="${d}" fill="none" stroke="#8C7356" stroke-opacity=".45" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="${d}" fill="none" stroke="#EDDDB8" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="${d}" fill="none" stroke="#CDB68C" stroke-width="2" stroke-dasharray="3 10" stroke-linecap="round"/>
+      <path d="${d}" fill="none" stroke="#167ADF" stroke-opacity=".9" stroke-width="10" stroke-linecap="round" stroke-dasharray="${lt} ${L * 2}"/>
+      <path d="${d}" fill="none" stroke="#167ADF" stroke-width="3" stroke-linecap="round" stroke-dasharray="${lt} ${L * 2}" ${nss}/>`,
+  }),
+
+  // ---- road: patchwork countryside in perspective; the road winds to a city on the horizon ----
+  road: (() => {
+    const W = 1200, H = 1500, HZ = 360, VX = 600, N = 80, pts = [];
+    for (let i = 0; i <= N; i++) { const t = i / N, p = Math.pow(1 - t, 1.5) * 1.06, a = Math.sin(t * Math.PI * 5.2 + .5) * .5 * (1 - t * .2); pts.push([VX + a * 600 * p, HZ + 6 + (H - HZ) * p]); }
+    const per = y => clamp((y - HZ) / (H - HZ), 0, 1.1);
+    return illoWorld({
+      id: 'rd', W, H, flag: true, maxS: 2.2, dayPx: 34, bg: '#A7D28A', tension: .25, pts, goal: [VX, HZ + 4], whole: [0, 120, 1200, 1500], fog: [0, -30, 200],
+      paint(Pa) {
+        const id = 'rd', M = 220, Lp = [], Rp = [], Ls = [], Rs = [];
+        for (let i = 0; i <= M; i++) { const t = i / M, q = Pa.at(t), n = Pa.nrm(t), p = per(q.y), h = 3 + 40 * Math.pow(p, .95), sh = h + 4 + 10 * p; Lp.push([q.x + n.x * h, q.y + n.y * h]); Rp.push([q.x - n.x * h, q.y - n.y * h]); Ls.push([q.x + n.x * sh, q.y + n.y * sh]); Rs.push([q.x - n.x * sh, q.y - n.y * sh]); }
+        const f = a => a.map(p => p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' L'), poly = (a, b) => `M${f(a)} L${f(b.slice().reverse())} Z`, line = a => `M${f(a)}`;
+        const near = (x, y, r) => nearPath(Pa, x, y, r);
+        // fields: rows in depth × rays from the vanishing point
+        let fields = '', stripes = '', hedges = '', trees = '', houses = '';
+        const rows = [...Array(12)].map((_, k) => Math.pow(k / 11, 1.75)), rays = [...Array(19)].map((_, i) => -2400 + i * 266 + RR(-60, 60, i));
+        const at = (X, p) => [VX + (X - VX) * p, HZ + (H - HZ) * p];
+        const pal = ['#B9DC8E', '#A3D07E', '#D9E5A2', '#C6DE8F', '#E9DBA2', '#98C878', '#CFE29A'];
+        for (let k = 0; k < 11; k++) for (let i = 0; i < 18; i++) {
+          const p0 = rows[k], p1 = rows[k + 1], a = at(rays[i], p0), b = at(rays[i + 1], p0), c = at(rays[i + 1], p1), dd = at(rays[i], p1), col = pal[Math.floor(rnd(k * 31 + i * 7) * pal.length)];
+          fields += `<path d="M${a} L${b} L${c} L${dd} Z" fill="${col}"/>`;
+          if (rnd(k * 13 + i) > .55 && p1 > .08) for (let s = 1; s < 6; s++) { const u = s / 6, x0 = a[0] + (b[0] - a[0]) * u, x1 = dd[0] + (c[0] - dd[0]) * u; stripes += `<line x1="${x0}" y1="${a[1]}" x2="${x1}" y2="${c[1]}" stroke="#7FAF62" stroke-opacity=".28" stroke-width="${1 + 3 * p1}"/>`; }
+        }
+        // hedgerows along a few rays, and trees in them
+        for (let i = 1; i < 18; i += 2) for (let s = 0; s < 26; s++) { const p = Math.pow(s / 26, 1.5) + .02, [x, y] = at(rays[i], p), r = 3 + 16 * p; if (near(x, y, r + 14) || y > H + 20) continue; hedges += tree(x, y, r, '#7DBB6E', '#4E9460'); }
+        for (let i = 0; i < 70; i++) { const p = Math.pow(rnd(i + 300), 1.2) * 1.05 + .03, x = VX + (RR(-1, 1, i + 500)) * 900 * p, y = HZ + (H - HZ) * p, r = 4 + 22 * p; if (near(x, y, r + 50 * p + 8)) continue; trees += rnd(i) > .5 ? tree(x, y, r, '#86C376', '#4D915D') : pine(x, y, r * 3, '#5FA08A', '#3B7464'); }
+        for (let i = 0; i < 14; i++) { const p = .08 + rnd(i + 900) * .8, side = i % 2 ? 1 : -1, x = VX + side * (140 + rnd(i + 950) * 380) * p * 1.3, y = HZ + (H - HZ) * p, s = 6 + 34 * p; if (near(x, y, s * 2 + 20)) continue; houses += `<ellipse cx="${x + s * .4}" cy="${y + 2}" rx="${s * 1.4}" ry="${s * .3}" fill="#2E5A3A" opacity=".2"/><path d="M${x - s} ${y} v${-s * .9} h${s * 2} v${s * .9} Z" fill="#FBF6EE"/><path d="M${x + s * .2} ${y} v${-s * .9} h${s * .8} v${s * .9} Z" fill="#E4DCCF"/><path d="M${x - s * 1.15} ${y - s * .85} L${x - s * .2} ${y - s * 1.7} L${x + s * 1.15} ${y - s * 1.7} L${x + s * 1.15} ${y - s * .85} Z" fill="#E0735A"/><path d="M${x - s * 1.15} ${y - s * .85} L${x - s * .2} ${y - s * 1.7} L${x + s * .5} ${y - s * .85} Z" fill="#C85A44"/><rect x="${x - s * .6}" y="${y - s * .6}" width="${s * .35}" height="${s * .3}" fill="#9CC4E8"/>`; }
+        let city = ''; [[-110, 34], [-92, 56], [-72, 30], [-56, 80], [-38, 46], [-20, 66], [0, 110], [18, 52], [36, 74], [54, 34], [72, 58], [90, 28], [108, 44]].forEach(([dx, h], i) => { const w = 16 + (i % 3) * 4, x = VX + dx - w / 2; city += `<rect x="${x}" y="${HZ - h}" width="${w}" height="${h}" fill="${i % 2 ? '#93AFD3' : '#86A3CA'}"/><rect x="${x + w * .55}" y="${HZ - h}" width="${w * .45}" height="${h}" fill="#7B98C1"/>`; for (let r = 7; r < h - 5; r += 9) city += `<rect x="${x + 3}" y="${HZ - h + r}" width="${w * .35}" height="3" fill="#FFF0C8" opacity=".8"/>`; });
+        let dash = ''; for (let i = 0; i < 60; i++) { const t0 = i / 60, t1 = t0 + .45 / 60, a = Pa.at(t0), b = Pa.at(t1), p = per(a.y); dash += `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="#fff" stroke-width="${1 + 4 * p}" stroke-linecap="round" opacity=".9"/>`; }
+        return `<defs>${kit(id)}
+            <linearGradient id="rd-sky" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="${HZ}"><stop offset="0" stop-color="#7DB7EE"/><stop offset=".55" stop-color="#BFDCF6"/><stop offset="1" stop-color="#FBE9D3"/></linearGradient>
+            <radialGradient id="rd-sun" cx="820" cy="${HZ - 30}" r="420" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#FFF3CF"/><stop offset=".3" stop-color="#FFE9C2" stop-opacity=".6"/><stop offset="1" stop-color="#FFE9C2" stop-opacity="0"/></radialGradient>
+            <linearGradient id="rd-road" gradientUnits="userSpaceOnUse" x1="0" y1="${HZ}" x2="0" y2="${H}"><stop offset="0" stop-color="#C3CCDA"/><stop offset="1" stop-color="#7A8AA2"/></linearGradient>
+            <linearGradient id="rd-haze" gradientUnits="userSpaceOnUse" x1="0" y1="${HZ - 10}" x2="0" y2="${HZ + 220}"><stop offset="0" stop-color="#F4EEE6" stop-opacity=".95"/><stop offset="1" stop-color="#F4EEE6" stop-opacity="0"/></linearGradient></defs>
+          <rect width="${W}" height="${HZ + 4}" fill="url(#rd-sky)"/><rect width="${W}" height="${HZ + 4}" fill="url(#rd-sun)"/>
+          <circle cx="820" cy="${HZ - 34}" r="34" fill="#FFE2A0"/>
+          ${cloud(id, 180, 120, 1)}${cloud(id, 960, 90, .75, .9)}${cloud(id, 420, 230, .6, .85)}
+          <path d="${range(-80, 1280, HZ + 2, 24, 40, 120, 71)}" fill="#AFC6E3"/>
+          <path d="${wavePath(HZ + 8, 10, 110, .4, -40, 1240, HZ + 60)}" fill="#A5CBB2"/>
+          ${city}
+          <rect y="${HZ + 6}" width="${W}" height="${H - HZ}" fill="#ABD38C"/>${fields}${stripes}
+          <rect y="${HZ - 10}" width="${W}" height="240" fill="url(#rd-haze)"/>
+          ${houses}${hedges}
+          <path d="${poly(Ls, Rs)}" fill="#D9C79E"/><path d="${poly(Lp, Rp)}" fill="url(#rd-road)"/>
+          <path d="${line(Lp)}" fill="none" stroke="#fff" stroke-opacity=".85" stroke-width="2"/><path d="${line(Rp)}" fill="none" stroke="#fff" stroke-opacity=".85" stroke-width="2"/>
+          ${dash}${trees}
+          <path d="M${VX - 26} ${HZ + 8} v-34 M${VX + 26} ${HZ + 8} v-34" stroke="#5E6E86" stroke-width="5"/><path d="M${VX - 32} ${HZ - 30} h64 v12 h-64 Z" fill="#167ADF"/>`;
+      },
+      trail: (d, lt, L) => `<path d="${d}" fill="none" stroke="#167ADF" stroke-opacity=".9" stroke-width="7" stroke-linecap="round" stroke-dasharray="${lt} ${L * 2}"/>
+        <path d="${d}" fill="none" stroke="#5AB0FF" stroke-width="3" stroke-linecap="round" stroke-dasharray="${lt} ${L * 2}" ${nss}/>`,
+    });
+  })(),
+
+  // ---- sea: from the pier toward a lighthouse island on the horizon ----
+  sea: (() => {
+    const W = 1200, H = 1500, HZ = 430, IX = 720, IY = HZ + 44;
+    const pts = [[560, 1400], [880, 1300], [330, 1185], [860, 1075], [380, 965], [820, 865], [450, 775], [780, 695], [560, 625], [760, 565], [680, 520], [716, IY + 8]]; // tacking, like a real sailboat
+    const per = y => clamp((y - HZ) / (H - HZ), 0, 1);
+    return illoWorld({
+      id: 'sea', W, H, flag: false, maxS: 3, tension: .12, dayPx: 40, bg: '#5A9BDD', pts, goal: [IX + 22, HZ - 150], whole: [0, 160, 1200, 1500], fog: [0, 90, 210],
+      paint(Pa) {
+        const id = 'sea'; let waves = '', glint = '', boats = '', gulls = '';
+        for (let i = 0; i < 700; i++) { const p = Math.pow(rnd(i + 11), 1.6), y = HZ + 8 + p * (H - HZ - 140), x = RR(-50, 1250, i + 77), s = 2 + 16 * per(y); if (nearPath(Pa, x, y, 8 + s)) continue; waves += `<path d="M${x - s} ${y} q ${s * .5} ${-s * .4} ${s} 0 q ${s * .5} ${-s * .4} ${s} 0" fill="none" stroke="#fff" stroke-opacity="${RR(.25, .6, i)}" stroke-width="${.8 + 2.2 * per(y)}" stroke-linecap="round"/>`; }
+        for (let i = 0; i < 160; i++) { const p = Math.pow(rnd(i + 401), 1.4), y = HZ + 6 + p * (H - HZ - 160), x = 330 + (rnd(i + 402) - .5) * (40 + 360 * per(y)); glint += `<ellipse cx="${x}" cy="${y}" rx="${2 + 14 * per(y)}" ry="${.6 + 2 * per(y)}" fill="#FFF6D8" opacity="${RR(.4, .9, i)}"/>`; }
+        [[220, HZ + 22, .5], [1010, HZ + 30, .6], [900, HZ + 70, .9]].forEach(([x, y, s]) => boats += `<path d="M${x - 22 * s} ${y} h${44 * s} l${-8 * s} ${9 * s} h${-28 * s} Z" fill="#fff"/><path d="M${x} ${y - 2} v${-40 * s} l${22 * s} ${36 * s} Z" fill="#fff"/><path d="M${x - 2} ${y - 4} v${-30 * s} l${-14 * s} ${28 * s} Z" fill="#F4D9B8"/>`);
+        [[520, 250], [552, 236], [880, 300], [910, 286], [400, 330]].forEach(([x, y]) => gulls += `<path d="M${x - 11} ${y} q 5.5 -7 11 0 q 5.5 -7 11 0" fill="none" stroke="#45607F" stroke-width="2.4" stroke-linecap="round"/>`);
+        const TX = IX + 22, TB = IY - 36, TT = HZ - 120;
+        return `<defs>${kit(id)}
+            <linearGradient id="sea-sky" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="${HZ}"><stop offset="0" stop-color="#78B4EE"/><stop offset=".6" stop-color="#C2DEF6"/><stop offset="1" stop-color="#FCE6CF"/></linearGradient>
+            <radialGradient id="sea-sun" cx="330" cy="${HZ - 20}" r="420" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#FFF2CC"/><stop offset=".3" stop-color="#FFE7C0" stop-opacity=".55"/><stop offset="1" stop-color="#FFE7C0" stop-opacity="0"/></radialGradient>
+            <linearGradient id="sea-water" gradientUnits="userSpaceOnUse" x1="0" y1="${HZ}" x2="0" y2="${H}"><stop offset="0" stop-color="#CDE5F7"/><stop offset=".25" stop-color="#8CC1EE"/><stop offset=".7" stop-color="#4E95DC"/><stop offset="1" stop-color="#3478C6"/></linearGradient>
+            <linearGradient id="sea-beam" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#FFF4C2" stop-opacity=".7"/><stop offset="1" stop-color="#FFF4C2" stop-opacity="0"/></linearGradient>
+            <radialGradient id="sea-lamp"><stop offset="0" stop-color="#FFF7D6"/><stop offset="1" stop-color="#FFF7D6" stop-opacity="0"/></radialGradient></defs>
+          <rect width="${W}" height="${HZ + 2}" fill="url(#sea-sky)"/><rect width="${W}" height="${HZ + 2}" fill="url(#sea-sun)"/><circle cx="330" cy="${HZ - 24}" r="40" fill="#FFE3A6"/>
+          ${cloud(id, 160, 140, 1)}${cloud(id, 980, 110, .8, .9)}${cloud(id, 640, 250, .55, .8)}
+          <path d="M-40 ${HZ} Q 60 ${HZ - 26} 160 ${HZ - 8} Q 220 ${HZ - 20} 290 ${HZ} Z M940 ${HZ} Q 1020 ${HZ - 22} 1100 ${HZ - 10} Q 1180 ${HZ - 24} 1260 ${HZ} Z" fill="#A9BFD8"/>
+          <rect y="${HZ}" width="${W}" height="${H - HZ}" fill="url(#sea-water)"/>${glint}${waves}${boats}${gulls}
+          <path d="M${TX} ${TT + 10} L${TX - 520} ${TT - 60} L${TX - 520} ${TT + 60} Z" fill="url(#sea-beam)" transform="scale(-1 1) translate(${-2 * TX} 0)"/>
+          <path d="M${TX} ${TT + 10} L${TX - 520} ${TT - 60} L${TX - 520} ${TT + 60} Z" fill="url(#sea-beam)"/>
+          <ellipse cx="${IX}" cy="${IY + 14}" rx="220" ry="16" fill="#fff" opacity=".5" filter="url(#sea-b6)"/>
+          <path d="M${IX - 200} ${IY + 12} Q ${IX - 170} ${IY - 30} ${IX - 110} ${IY - 36} Q ${IX - 40} ${IY - 70} ${IX + 40} ${IY - 56} Q ${IX + 130} ${IY - 50} ${IX + 170} ${IY - 18} Q ${IX + 200} ${IY} ${IX + 210} ${IY + 12} Z" fill="#7F92AE"/>
+          <path d="M${IX + 40} ${IY - 56} Q ${IX + 130} ${IY - 50} ${IX + 170} ${IY - 18} Q ${IX + 200} ${IY} ${IX + 210} ${IY + 12} L${IX + 20} ${IY + 12} Z" fill="#A3B3C9"/>
+          <path d="M${IX - 120} ${IY - 34} Q ${IX - 40} ${IY - 72} ${IX + 40} ${IY - 58} Q ${IX + 110} ${IY - 52} ${IX + 140} ${IY - 32} Q ${IX + 30} ${IY - 40} ${IX - 120} ${IY - 34} Z" fill="#86C477"/>
+          ${tree(IX - 90, IY - 34, 16, '#8FCB80', '#5C9F69')}${tree(IX - 60, IY - 42, 12, '#8FCB80', '#5C9F69')}
+          <rect x="${IX + 54}" y="${IY - 74}" width="44" height="26" fill="#FBF6EE"/><path d="M${IX + 50} ${IY - 72} L${IX + 76} ${IY - 92} L${IX + 102} ${IY - 72} Z" fill="#E0735A"/>
+          <path d="M${TX - 22} ${TB} L${TX - 13} ${TT + 22} L${TX + 13} ${TT + 22} L${TX + 22} ${TB} Z" fill="#FBF8F2"/><path d="M${TX} ${TB} L${TX} ${TT + 22} L${TX + 13} ${TT + 22} L${TX + 22} ${TB} Z" fill="#E6E0D6"/>
+          ${[0, 1, 2].map(i => { const y0 = TB - 18 - i * 34, y1 = y0 - 16, k0 = (TB - y0) / (TB - TT - 22), k1 = (TB - y1) / (TB - TT - 22); return `<path d="M${TX - lerp(22, 13, k0)} ${y0} L${TX - lerp(22, 13, k1)} ${y1} L${TX + lerp(22, 13, k1)} ${y1} L${TX + lerp(22, 13, k0)} ${y0} Z" fill="#E4574B"/>`; }).join('')}
+          <rect x="${TX - 18}" y="${TT + 16}" width="36" height="7" rx="2" fill="#2D3E57"/><rect x="${TX - 11}" y="${TT - 6}" width="22" height="22" fill="#FFE9A3" stroke="#2D3E57" stroke-width="2.5"/>
+          <path d="M${TX - 15} ${TT - 6} L${TX} ${TT - 22} L${TX + 15} ${TT - 6} Z" fill="#E4574B"/><circle cx="${TX}" cy="${TT + 5}" r="60" fill="url(#sea-lamp)" opacity=".85"/>
+          <path d="M-40 ${H - 120} C 260 ${H - 170}, 700 ${H - 90}, 1240 ${H - 150} L1240 ${H} L-40 ${H} Z" fill="#fff" opacity=".55"/>
+          <path d="M-40 ${H - 108} C 260 ${H - 156}, 700 ${H - 78}, 1240 ${H - 138} L1240 ${H} L-40 ${H} Z" fill="#F2DCAE"/>
+          <path d="M-40 ${H - 60} C 300 ${H - 90}, 800 ${H - 40}, 1240 ${H - 80} L1240 ${H} L-40 ${H} Z" fill="#E8CC94"/>
+          ${[...Array(40)].map((_, i) => tuft(RR(0, 1200, i + 700), RR(H - 70, H - 10, i + 760), RR(1.6, 2.6, i), '#9BB46A')).join('')}
+          <path d="M540 ${H - 40} L548 ${H - 150} L572 ${H - 150} L580 ${H - 40} Z" fill="#B98A5E"/>${[...Array(8)].map((_, i) => `<line x1="${542 + i * .5}" x2="${578 - i * .5}" y1="${H - 52 - i * 13}" y2="${H - 52 - i * 13}" stroke="#8C6440" stroke-width="2.5"/>`).join('')}
+          <rect x="544" y="${H - 156}" width="6" height="40" fill="#8C6440"/><rect x="570" y="${H - 156}" width="6" height="40" fill="#8C6440"/>`;
+      },
+      trail: (d, lt, L) => `<path d="${d}" fill="none" stroke="#fff" stroke-opacity=".85" stroke-width="2.4" stroke-dasharray="1 8" stroke-linecap="round" ${nss}/>
+        <path d="${d}" fill="none" stroke="#fff" stroke-opacity=".4" stroke-width="18" stroke-linecap="round" stroke-dasharray="${lt} ${L * 2}"/>
+        <path d="${d}" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-dasharray="${lt} ${L * 2}"/>`,
+    });
+  })(),
+
+  // ---- map: a painted island map with an inked route to the X ----
+  map: (() => {
+    const W = 1200, H = 1500, X = { x: 900, y: 360 };
+    const pts = [[250, 1250], [200, 1140], [330, 1080], [520, 1120], [660, 1040], [600, 940], [420, 930], [280, 860], [260, 740], [380, 660], [560, 680], [700, 620], [640, 520], [520, 470], [600, 380], [760, 420], [860, 470], [920, 420], [X.x - 10, X.y + 30]];
+    const coast = (() => { let d = ''; const n = 60; for (let i = 0; i <= n; i++) { const a = i / n * Math.PI * 2, r = 1 + .12 * Math.sin(a * 3 + 1) + .08 * Math.sin(a * 7 + 2) + .05 * Math.sin(a * 13); const x = 600 + Math.cos(a) * 470 * r, y = 760 + Math.sin(a) * 560 * r; d += `${i ? ' L' : 'M'}${x.toFixed(0)} ${y.toFixed(0)}`; } return d + ' Z'; })();
+    return illoWorld({
+      id: 'map', W, H, flag: false, maxS: 3, dayPx: 40, bg: '#EBDDBB', chip: 'above', pts, goal: [X.x, X.y - 20], whole: [0, 60, 1200, 1500], fog: [0, 0, 150],
+      paint(Pa) {
+        const id = 'map', ink = '#6B4E33'; let stains = '', mtns = '', forest = '', grid = '';
+        for (let i = 0; i < 24; i++) stains += `<circle cx="${RR(0, 1200, i + 1)}" cy="${RR(0, 1500, i + 2)}" r="${RR(30, 120, i + 3)}" fill="#C9A66B" opacity=".08"/>`;
+        for (let x = 100; x < W; x += 150) grid += `<line x1="${x}" y1="0" x2="${x}" y2="${H}" stroke="${ink}" stroke-opacity=".1" stroke-width="1.5"/>`;
+        for (let y = 100; y < H; y += 150) grid += `<line x1="0" y1="${y}" x2="${W}" y2="${y}" stroke="${ink}" stroke-opacity=".1" stroke-width="1.5"/>`;
+        [[620, 760, 60], [700, 720, 50], [560, 700, 44], [760, 800, 40], [420, 480, 46], [480, 450, 38], [880, 600, 42]].forEach(([x, y, s]) => { if (nearPath(Pa, x, y - s * .5, s * .8)) return; mtns += `<path d="M${x - s} ${y} L${x} ${y - s * 1.2} L${x + s} ${y} Z" fill="#D8C08E"/><path d="M${x} ${y - s * 1.2} L${x + s} ${y} L${x + s * .1} ${y} Z" fill="#B99A66"/><path d="M${x - s} ${y} L${x} ${y - s * 1.2} L${x + s} ${y}" fill="none" stroke="${ink}" stroke-width="2.5" stroke-linejoin="round"/><path d="M${x - s * .25} ${y - s * .9} L${x} ${y - s * 1.2} L${x + s * .3} ${y - s * .85}" fill="#fff" opacity=".7"/>`; });
+        [[380, 1000, 90], [820, 1000, 110], [260, 520, 70], [900, 760, 60], [600, 1220, 70]].forEach(([cx, cy, r], j) => { for (let i = 0; i < 40; i++) { const a = rnd(i + j * 60) * 6.28, dd = Math.sqrt(rnd(i + j * 60 + 7)) * r, x = cx + Math.cos(a) * dd, y = cy + Math.sin(a) * dd * .7; if (nearPath(Pa, x, y, 22)) continue; forest += `<circle cx="${x}" cy="${y - 8}" r="8" fill="#8DB57A"/><circle cx="${x + 2}" cy="${y - 10}" r="5" fill="#A9CC90"/><line x1="${x}" y1="${y}" x2="${x}" y2="${y - 3}" stroke="${ink}" stroke-width="1.5"/><circle cx="${x}" cy="${y - 8}" r="8" fill="none" stroke="${ink}" stroke-opacity=".5" stroke-width="1.2"/>`; } });
+        return `<defs>${kit(id)}<radialGradient id="map-vig" cx=".5" cy=".5" r=".75"><stop offset=".6" stop-color="#F3E6C6"/><stop offset="1" stop-color="#D9BE8A"/></radialGradient></defs>
+          <rect width="${W}" height="${H}" fill="url(#map-vig)"/>${stains}${grid}
+          <path d="${coast}" fill="#9CC7D6" opacity=".55" filter="url(#map-b40)" transform="translate(600 760) scale(1.12) translate(-600 -760)"/>
+          <path d="${coast}" fill="#E4DCB0"/>
+          <g filter="url(#map-b16)" opacity=".75"><ellipse cx="420" cy="980" rx="190" ry="140" fill="#B9D59A"/><ellipse cx="820" cy="980" rx="170" ry="150" fill="#A9CF90"/><ellipse cx="640" cy="720" rx="200" ry="130" fill="#E2C995"/><ellipse cx="300" cy="560" rx="140" ry="110" fill="#BFD9A0"/><ellipse cx="880" cy="420" rx="150" ry="120" fill="#EED8A8"/></g>
+          <path d="${coast}" fill="none" stroke="${ink}" stroke-width="3.5"/>
+          <path d="${coast}" fill="none" stroke="${ink}" stroke-opacity=".35" stroke-width="2" stroke-dasharray="3 7" transform="translate(600 760) scale(1.05) translate(-600 -760)"/>
+          <path d="M170 900 C 260 880, 330 930, 420 900 S 560 840, 640 880 S 760 960, 860 920 S 1000 860, 1080 880" fill="none" stroke="#7FB6CF" stroke-width="10" stroke-linecap="round"/>
+          <ellipse cx="560" cy="430" rx="70" ry="36" fill="#9CCBDC" stroke="${ink}" stroke-opacity=".5" stroke-width="2"/>
+          ${mtns}${forest}
+          <g transform="translate(150 1320)"><circle r="62" fill="none" stroke="${ink}" stroke-opacity=".5" stroke-width="2"/><path d="M0 -70 L12 -12 L70 0 L12 12 L0 70 L-12 12 L-70 0 L-12 -12 Z" fill="#E9D8AE" stroke="${ink}" stroke-width="2"/><path d="M0 -70 L12 -12 L0 0 Z M70 0 L12 12 L0 0 Z M0 70 L-12 12 L0 0 Z M-70 0 L-12 -12 L0 0 Z" fill="${ink}" opacity=".75"/><text y="-80" text-anchor="middle" font-family="Georgia,serif" font-weight="700" font-size="24" fill="${ink}">N</text></g>
+          <g transform="translate(600 120)"><path d="M-260 -30 L260 -30 L230 0 L260 30 L-260 30 L-230 0 Z" fill="#E7D3A6" stroke="${ink}" stroke-width="2.5"/><text y="10" text-anchor="middle" font-family="Georgia,serif" font-style="italic" font-weight="700" font-size="30" fill="${ink}">The way to NEET-PG</text></g>
+          <path d="M210 1290 h80 v-30 l-40 -26 l-40 26 Z" fill="#F4E8CB" stroke="${ink}" stroke-width="2.5" stroke-linejoin="round"/>`;
+      },
+      trail: (d, lt, L, e) => `<path d="${d}" fill="none" stroke="#A3301F" stroke-opacity=".8" stroke-width="6" stroke-dasharray="20 14" stroke-linecap="round"/>
+        <path d="${d}" fill="none" stroke="#A3301F" stroke-width="8" stroke-linecap="round" stroke-dasharray="${lt} ${L * 2}"/>
+        <path d="${d}" fill="none" stroke="#A3301F" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="${lt} ${L * 2}" ${nss}/>
+        <path d="M${X.x - 40} ${X.y - 40} L${X.x + 40} ${X.y + 40} M${X.x + 40} ${X.y - 40} L${X.x - 40} ${X.y + 40}" stroke="#A3301F" stroke-width="16" stroke-linecap="round" opacity="${e.kind === 'date' ? 1 : .35}"/>`,
+    });
+  })(),
+};
+
+// ---- camera ----
+let Z = 0, zAnim = null;
+function fit(b, h, cap, pt = 66, pb = 26) { pt += lay().inset; const px = 30, s = Math.min((CW - 2 * px) / Math.max(1, b.x1 - b.x0), (h - pt - pb) / Math.max(1, b.y1 - b.y0), cap); return { s, F: { x: (b.x0 + b.x1) / 2, y: (b.y0 + b.y1) / 2 }, A: { x: CW / 2, y: pt + (h - pt - pb) / 2 } }; }
+function bbox(ts) { const Pa = P(), q = ts.map(t => Pa.at(t)); return { x0: Math.min(...q.map(p => p.x)), x1: Math.max(...q.map(p => p.x)), y0: Math.min(...q.map(p => p.y)), y1: Math.max(...q.map(p => p.y)) }; }
+let STOPS = null;
+function stops() {
+  const w = WORLDS[S.mod], ws = wkStart(TODAY);
+  const week = bbox([...Array(8)].map((_, k) => tAt(addD(ws, k))));
+  const near = bbox([...Array(11)].map((_, k) => tAt(addD(TODAY, -20 + k * 6))));
+  // close: about 38px per day along the path, centred on today, so the week reads as stepping stones
+  const Pa = P(), t0 = progress(), dt = Math.max(.0005, tAt(addD(TODAY, 1)) - t0 || tAt(TODAY) - tAt(addD(TODAY, -1))), me = Pa.at(t0);
+  const close = { s: clamp((w.dayPx || 54) * (lay().k === 'strip' ? .7 : 1) / (dt * Pa.L), .2, w.maxS || 8), F: me, A: { x: CW / 2, y: lay().inset + (CH[0] - lay().inset) * .62 } };
+  const L = lay(); return [close, fit(near, CH[1], 1.1), fit(w.whole, CH[2], 1, L.head === 'foot' ? 24 : L.k === 'strip' ? 70 : 96, L.ctl === 'float' || L.k === 'strip' ? 60 : 16)];
+}
+function camAt(z) {
+  const L = STOPS, zc = clamp(z, 0, 2), i = Math.min(1, Math.floor(zc)), f = smooth(zc - i), a = L[i], b = L[i + 1];
+  const c = { s: Math.exp(lerp(Math.log(a.s), Math.log(b.s), f)), F: { x: lerp(a.F.x, b.F.x, f), y: lerp(a.F.y, b.F.y, f) }, A: { x: lerp(a.A.x, b.A.x, f), y: lerp(a.A.y, b.A.y, f) }, h: lerp(CH[i], CH[i + 1], f) };
+  // the painting has edges: keep the camera inside it
+  const w = WORLDS[S.mod];
+  if (w.bound) { c.s = Math.max(c.s, CW / w.W, c.h / w.H); const keep = (F, A, view, size, W) => { const v = view / c.s; if (v >= W) return W / 2 + (A - view / 2) / c.s; return clamp(F - A / c.s, 0, W - v) + A / c.s; }; c.F = { x: keep(c.F.x, c.A.x, CW, CW, w.W), y: keep(c.F.y, c.A.y, c.h, c.h, w.H) }; }
+  return c;
+}
+const toScreen = (c, p) => ({ x: (p.x - c.F.x) * c.s + c.A.x, y: (p.y - c.F.y) * c.s + c.A.y });
+
+function lines(l) {
+  const e = exam(), ws = wkStart(TODAY), m = mod();
+  if (l === 0) { let done = 0, n = 0; for (let k = 0; k < 7; k++) { const d = addD(ws, k); if (d > TODAY) break; n++; const r = rec(d); if (r.st === 'done' || r.st === 'partial' || r.st === 'today') done++; } return ['This week', `${done} of ${n} days done`]; }
+  if (l === 1) { const tw = totalWeeks(); return [`Week ${weekNo(TODAY)}`, tw ? `of ${e.win ? '~' : ''}${tw}` : 'so far']; }
+  if (e.kind === 'none') return ['Where to?', 'Add your exam date'];
+  const n = e.kind === 'date' ? `${diff(TODAY, e.v)} days` : e.kind === 'month' ? `${(e.v.getFullYear() - TODAY.getFullYear()) * 12 + e.v.getMonth() - TODAY.getMonth()} months` : `${e.v[0]}–${e.v[1]} months`;
+  return [n, m.unit];
+}
+function headline(l) {
+  const e = exam(), ws = wkStart(TODAY), m = mod();
+  if (l === 0) { let done = 0, n = 0; for (let k = 0; k < 7; k++) { const d = addD(ws, k); if (d > TODAY) break; n++; const r = rec(d); if (r.st === 'done' || r.st === 'partial' || r.st === 'today') done++; } return `<div class="pl"><b>This week</b><span>${done} of ${n} days done</span></div>`; }
+  if (l === 1) { const tw = totalWeeks(); return `<div class="pl"><b>Week ${weekNo(TODAY)}</b><span>${tw ? `of ${e.win ? '~' : ''}${tw}` : 'so far'}</span></div>`; }
+  if (e.kind === 'none') return `<div class="big"><div class="n">Where to?</div><div class="u">Add your exam date to see the ${m.goalWord}</div><span class="cta tap" data-act="date" style="display:inline-block;width:auto;margin-top:10px;padding:9px 14px;font-size:12px;pointer-events:auto">ADD EXAM DATE</span></div>`;
+  const n = e.kind === 'date' ? `${diff(TODAY, e.v)} days` : e.kind === 'month' ? `${(e.v.getFullYear() - TODAY.getFullYear()) * 12 + e.v.getMonth() - TODAY.getMonth()} months` : `${e.v[0]}–${e.v[1]} months`;
+  return `<div class="big"><div class="n">${n}</div><div class="u">${m.unit}</div></div>`;
+}
+function goalChip(e) { return e.kind === 'none' ? 'Add your exam date<small>to see where you\'re going</small>' : `NEET-PG<small>${exLabel(e)}</small>`; }
+
+function renderMod() {
+  const el = document.getElementById('mod'), e = exam(), w = WORLDS[S.mod], Pa = P(), ws = wkStart(TODAY);
+  ({ cw: CW, ch: CH } = lay());
+  STOPS = stops();
+  let ov = '';
+  // this week's days on the path (close view only)
+  for (let k = 0; k < 7; k++) {
+    const d = addD(ws, k), r = rec(d); if (same(d, TODAY) || d < START) continue;
+    const bg = r.st === 'done' ? '#58BD7D' : r.st === 'partial' ? '#A7DCB8' : r.st === 'none' ? '#D5DAE1' : '#fff';
+    const bd = r.st === 'future' ? '2px dashed #8DB6EA' : '2.5px solid #fff';
+    ov += `<div class="stone z0" data-t="${tAt(d)}" data-day="${d.getTime()}" style="background:${bg};border:${bd};color:${r.st === 'future' ? '#1961b4' : '#fff'}">${r.st === 'done' ? CHECK : WD[k][0]}</div>`;
+  }
+  // month markers (middle view): facts from the calendar, nothing invented
+  const endD = e.kind === 'none' ? addD(START, 240) : e.end;
+  for (let d = new Date(START.getFullYear(), START.getMonth() + 1, 1); d < endD; d = addM(d, 1)) ov += `<div class="mo z1" data-t="${tAt(d)}">${MS[d.getMonth()]}</div>`;
+  ov += `<div class="mo z1 st" data-t="0">Start · ${fmt(START)}</div>`;
+  // the goal
+  if (w.flag) ov += `<div class="gflag" data-goal="1">${e.kind === 'date' ? FLAG('#167ADF', 20, '#153356') : FLAG('#fff', 20, '#8DB6EA')}</div>`;
+  if (e.kind !== 'none') ov += `<div class="goal z2" data-goal="1">${goalChip(e)}</div>`;
+  ov += `<div class="me" data-t="${progress()}"><img src="assets/rezzy-headshot.webp">${S.mod === 'sea' ? `<svg class="boat" viewBox="0 0 60 22" width="60" height="22"><path d="M2 2 H58 L48 20 H12 Z" fill="#E4574B"/><path d="M2 2 H58 L56 6 H4 Z" fill="#fff" opacity=".7"/></svg>` : ''}</div>`;
+  const L = lay(), seg = `<div class="seg3" id="seg">${['Week', 'Months', 'All'].map((t, i) => `<button data-lv="${i}">${t}</button>`).join('')}</div>`;
+  const ctl = L.ctl === 'pm' ? `<div class="zc"><button id="zout" title="Zoom out">−</button><button id="zin" title="Zoom in">+</button></div>`
+    : L.ctl === 'float' ? `<div class="segf">${seg}</div>` : L.ctl === 'cta' ? `<button class="xcta" id="xcta"></button>` : '';
+  el.className = 'mod lay-' + L.k; document.getElementById('sheet').dataset.lay = L.k;
+  el.style.background = L.head === 'foot' ? '#fff' : w.bg;
+  el.innerHTML = `<div class="vp" id="vp" style="background:${w.bg}"><div class="world" id="world"><svg width="${w.W}" height="${w.H}" viewBox="0 0 ${w.W} ${w.H}" style="overflow:visible">${w.art(e)}</svg></div>
+    <div class="ov" id="mov">${ov}</div>
+    ${L.head === 'overlay' ? '<div class="hl" id="hl"></div>' : ''}${ctl}</div>
+    ${L.head === 'foot' ? `<div class="foot"><div class="ft" id="hl"></div>${seg}</div>` : ''}`;
+  bind(el);
+  el.querySelectorAll('[data-lv]').forEach(b => b.onclick = ev => { ev.stopPropagation(); goLevel(+b.dataset.lv); });
+  if (L.ctl === 'pm') { el.querySelector('#zout').onclick = ev => { ev.stopPropagation(); goLevel(S.ml + 1); }; el.querySelector('#zin').onclick = ev => { ev.stopPropagation(); goLevel(S.ml - 1); }; }
+  if (L.ctl === 'cta') el.querySelector('#xcta').onclick = ev => { ev.stopPropagation(); goLevel(S.ml ? 0 : 2); };
+  el.onclick = ev => { if (ev.target.closest('[data-day],[data-act],.zc,.seg3,.xcta,.foot')) return; goLevel(L.ctl === 'cta' ? (S.ml ? 0 : 2) : S.ml < 2 ? S.ml + 1 : 0); };
+  el._hl = -1; applyZ();
+}
+function applyZ() {
+  const el = document.getElementById('mod'), world = document.getElementById('world'); if (!world || !STOPS) return;
+  const c = camAt(Z), w = WORLDS[S.mod], Pa = P(), zc = clamp(Z, 0, 2);
+  el.querySelector('#vp').style.height = c.h + 'px';
+  world.style.transform = `translate(${c.A.x - c.F.x * c.s}px, ${c.A.y - c.F.y * c.s}px) scale(${c.s})`;
+  el.querySelectorAll('#mov > *').forEach(o => {
+    const p = o.dataset.goal ? w.goal : Pa.at(+o.dataset.t), q = toScreen(c, p);
+    let x = q.x, y = q.y;
+    if (o.classList.contains('mo')) { const nn = Pa.nrm(+o.dataset.t), sd = nn.x >= 0 ? 1 : -1; x += nn.x * sd * 16; y += nn.y * sd * 16; o.style.transform = sd > 0 ? 'translate(0,-50%)' : 'translate(-100%,-50%)'; }
+    if (o.classList.contains('goal') && w.chip === 'above') { y -= 34; o.style.transform = 'translate(-50%,-100%)'; o.style.textAlign = 'center'; }
+    else if (o.classList.contains('goal')) { const right = x < CW - 150; x += right ? 18 : -18; y -= w.flag ? 22 : 4; o.style.transform = right ? 'translate(0,-50%)' : 'translate(-100%,-50%)'; o.style.textAlign = 'left'; }
+    o.style.left = x + 'px'; o.style.top = y + 'px';
+    const op = o.classList.contains('z0') ? clamp(1 - zc / .55, 0, 1) : o.classList.contains('z1') ? clamp((zc - .35) / .5, 0, 1) * clamp((1.75 - zc) / .4, 0, 1) : o.classList.contains('z2') ? clamp((zc - 1.25) / .55, 0, 1) : o.classList.contains('gflag') ? clamp((zc - .6) / .4, 0, 1) : 1;
+    o.style.opacity = op; o.style.pointerEvents = op < .3 ? 'none' : 'auto';
+  });
+  const me = el.querySelector('#mov .me'); if (me) { const s = lerp(50, 30, zc / 2); me.style.width = s + 'px'; me.querySelector('img').style.width = me.querySelector('img').style.height = s + 'px'; const b = me.querySelector('.boat'); if (b) b.style.width = s * 1.3 + 'px'; }
+  const l = Math.round(zc); if (el._hl !== l) { el._hl = l; const hl = el.querySelector('#hl'), [a, b] = lines(l); hl.innerHTML = lay().head === 'foot' ? `<b>${a}</b><span>${b}</span>${exam().kind === 'none' && l === 2 ? '<span class="tap" data-act="date" style="color:#167ADF;font-weight:700;pointer-events:auto">Add date</span>' : ''}` : headline(l); hl.classList.toggle('bot', l === 2 && lay().head === 'overlay' && lay().k !== 'strip'); bind(hl); hl.animate([{ opacity: 0, transform: 'translateY(4px)' }, { opacity: 1, transform: 'none' }], { duration: 260, easing: 'ease-out' }); }
+  const zi = el.querySelector('#zin'); if (zi) { zi.disabled = S.ml === 0; el.querySelector('#zout').disabled = S.ml === 2; }
+  el.querySelectorAll('[data-lv]').forEach(b => b.classList.toggle('on', +b.dataset.lv === S.ml));
+  const xc = el.querySelector('#xcta'); if (xc && xc._m !== S.ml + S.mod) { xc._m = S.ml + S.mod; xc.innerHTML = S.ml ? `${CHEV('#153356', 14, 'd').replace('m6 9 6 6 6-6', 'm6 15 6-6 6 6')} Back to this week` : `${mod().whole} ${CHEV('#153356', 14, 'd')}`; }
+}
+function animateZ(to) {
+  cancelAnimationFrame(zAnim); const from = Z, t0 = performance.now(), dur = 520;
+  const step = now => { const k = clamp((now - t0) / dur, 0, 1), q = 1 - Math.pow(1 - k, 3); Z = from + (to - from) * q; applyZ(); if (k < 1) zAnim = requestAnimationFrame(step); };
+  zAnim = requestAnimationFrame(step);
+}
+function goLevel(l) {
+  l = clamp(l, 0, 2); S.ml = l;
+  // pulling back past the week folds the month grid so the picture has room; coming back in restores it
+  if (l >= 1 && !S.folded) { S.folded = true; S._autofold = true; renderCal(); }
+  if (l === 0 && S._autofold) { S.folded = false; S._autofold = false; renderCal(); }
+  animateZ(l);
+}
+function zoom(dz) { goLevel(S.ml + dz); }
+function exLabel(e) { return e.kind === 'date' ? `${fmt(e.v)}, ${e.v.getFullYear()}` : e.kind === 'month' ? `${MON[e.v.getMonth()]} ${e.v.getFullYear()}` : `${fmt(e.win[0])} – ${fmt(e.win[1])}`; }
+
+// ---------- wiring ----------
+function isMockWeek(ws) { for (let k = 0; k < 7; k++) if (isMock(addD(ws, k))) return true; return false; }
+function bind(root) {
+  root.querySelectorAll('[data-day]').forEach(el => el.onclick = ev => { ev.stopPropagation(); const d = new Date(+el.dataset.day); S.sel = d; S.view = d; renderCal(); renderDay(); });
+  root.querySelectorAll('[data-act="date"]').forEach(el => el.onclick = ev => { ev.stopPropagation(); openDate(); });
+  root.querySelectorAll('[data-z2]').forEach(el => el.onclick = ev => { ev.stopPropagation(); zoom(+el.dataset.z2 - S.ml); });
+}
+function renderSide() {
+  document.getElementById('opts').innerHTML = MODS.map((m, i) => `<button class="opt ${m.k === S.mod ? 'on' : ''}" data-m="${m.k}"><b><i>${i + 1}</i>${m.name}</b><span>${m.tag}</span></button>`).join('');
+  document.getElementById('cases').innerHTML = CASES.map(c => `<button class="${c.k === S.c && !S.setTo ? 'on' : ''}" data-c="${c.k}">${c.t}</button>`).join('');
+  const m = mod();
+  document.getElementById('notes').innerHTML = `<b>${m.name}</b> <span style="color:#8C8884">· This week → months → whole way</span><div style="margin-top:4px">${m.desc}</div><div class="pc"><div><em style="color:#1a7b4a">Good</em>${m.pros}</div><div><em style="color:#cd4035">Watch out</em>${m.cons}</div></div><div style="margin-top:12px;padding-top:10px;border-top:1px solid #eee"><b>Layout: ${lay().name}</b><div style="margin-top:4px">${lay().desc}</div></div>`;
+  document.getElementById('lays').innerHTML = LAYS.map((l, i) => `<button class="opt ${l.k === S.lay ? 'on' : ''}" data-l="${l.k}"><b><i>${String.fromCharCode(65 + i)}</i>${l.name}</b><span>${l.tag}</span></button>`).join('');
+  document.querySelectorAll('[data-l]').forEach(b => b.onclick = () => { S.lay = b.dataset.l; S.ml = 0; Z = 0; if (S._autofold) { S.folded = false; S._autofold = false; } render(); });
+  document.querySelectorAll('[data-m]').forEach(b => b.onclick = () => { S.mod = b.dataset.m; S.ml = 0; Z = 0; if (S._autofold) { S.folded = false; S._autofold = false; } render(); });
+  document.querySelectorAll('[data-c]').forEach(b => b.onclick = () => { S.c = b.dataset.c; S.setTo = null; Z = S.ml; render(); });
+}
+function renderHome() { document.getElementById('pill').innerHTML = `<span>${countdown()}</span><svg width="12" height="12" viewBox="0 0 24 24" style="fill:none;stroke:#6B7280;stroke-width:3;stroke-linecap:round;stroke-linejoin:round"><path d="m6 9 6 6 6-6"/></svg>`; document.getElementById('hint').style.display = S.open ? 'none' : 'block'; }
+function render() { renderSide(); renderHome(); renderCal(); renderMod(); renderDay(); }
+function openSheet() { S.open = true; S.sel = TODAY; S.view = TODAY; S.folded = false; S.ml = 0; Z = 0; render(); document.getElementById('sheet').classList.add('open'); document.getElementById('scroller').scrollTop = 0; }
+function closeSheet() { S.open = false; document.getElementById('sheet').classList.remove('open'); renderHome(); }
+document.getElementById('pill').onclick = openSheet;
+// Bevel behaviour (as in v10): scrolling the list folds the month into a week; back at the top it unfolds
+document.getElementById('scroller').addEventListener('scroll', ev => {
+  const y = ev.target.scrollTop;
+  if (y > 30 && !S.folded) { S.folded = true; S._scrollfold = true; renderCal(); }
+  else if (y < 4 && S.folded && S._scrollfold && !S._autofold) { S.folded = false; S._scrollfold = false; renderCal(); }
+});
+let snapT = 0;
+document.getElementById('mod').addEventListener('wheel', ev => { if (!ev.ctrlKey) return; ev.preventDefault(); cancelAnimationFrame(zAnim); Z = clamp(Z + ev.deltaY * .012, 0, 2); applyZ(); clearTimeout(snapT); snapT = setTimeout(() => goLevel(Math.round(Z)), 160); }, { passive: false });
+document.addEventListener('keydown', ev => { if (!S.open) return; if (ev.key === '-' || ev.key === '_') zoom(1); if (ev.key === '+' || ev.key === '=') zoom(-1); if (ev.key === 'Escape') closeSheet(); });
+const PICKS = [{ kind: 'date', v: new Date(2026, 11, 13), t: 'Dec 13, 2026', s: 'Exact date' }, { kind: 'date', v: new Date(2027, 2, 7), t: 'Mar 7, 2027', s: 'NEET-PG 2027 (published)' }, { kind: 'date', v: new Date(2027, 7, 15), t: 'Aug 15, 2027', s: 'Exact date' }, { kind: 'month', v: new Date(2027, 5, 1), t: 'June 2027', s: 'Month only' }];
+function openDate() {
+  const e = exam();
+  document.getElementById('bsheet').innerHTML = `<div class="handle"></div><h3>When's your exam?</h3><p>Your timeline and plan will shift to fit the new date.</p>${PICKS.map((x, i) => `<div class="optrow ${e.v && e.kind === x.kind && x.v.getTime() === e.v.getTime() ? 'on' : ''}" data-p="${i}">${x.t}<span>${x.s}</span></div>`).join('')}`;
+  document.getElementById('scrim').classList.add('open'); document.getElementById('bsheet').classList.add('open');
+  document.querySelectorAll('[data-p]').forEach(el => el.onclick = () => { const x = PICKS[+el.dataset.p]; S.c = x.kind === 'date' ? 'date' : 'month'; S.setTo = { kind: x.kind, v: x.v }; closeDate(); render(); toast(`Exam date saved: ${x.t}. Your timeline updated.`); });
+}
+function closeDate() { document.getElementById('scrim').classList.remove('open'); document.getElementById('bsheet').classList.remove('open'); }
+document.getElementById('scrim').onclick = closeDate;
+function toast(t) { const el = document.getElementById('toast'); el.textContent = t; el.classList.add('show'); clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('show'), 2200); }
+render();
+</script>
+</body>
+</html>
