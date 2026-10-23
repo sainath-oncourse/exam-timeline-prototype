@@ -124,6 +124,13 @@ kbd{font:600 11px/1 var(--font);background:#fff;border:1px solid #ddd;border-bot
 #sheet[data-lay=bleed] .daylist:before{content:"";position:absolute;top:8px;left:50%;margin-left:-18px;width:36px;height:4px;border-radius:2px;background:#D9DEE5}
 .mod.lay-strip .hl .pl{padding:7px 11px}
 #scroller.lock{overflow:hidden}
+.fz,.back{display:none}
+.mod.exp .fz{display:flex;flex-direction:column;position:absolute;right:12px;bottom:12px;z-index:3;border-radius:14px;overflow:hidden;background:rgba(255,255,255,.88);backdrop-filter:blur(12px);box-shadow:0 2px 10px rgba(10,30,60,.18)}
+.fz button{width:40px;height:40px;border:0;background:transparent;font:500 22px/1 var(--font);color:#153356;cursor:pointer}.fz button+button{border-top:1px solid rgba(0,0,0,.08)}.fz button:disabled{color:#C4CAD3;cursor:default}
+.mod.exp .back{display:flex;align-items:center;gap:6px;position:absolute;left:12px;top:12px;z-index:3;height:36px;padding:0 14px 0 11px;border:0;border-radius:999px;background:#167ADF;color:#fff;font:700 13px/1 var(--font);cursor:pointer;box-shadow:inset 0 2px 4px rgba(255,255,255,.4),0 3px 0 #1961b4}
+.mod.exp .zc,.mod.exp .segf,.mod.exp .xcta{display:none}
+.mod.exp .vp{cursor:grab;touch-action:none}.mod.exp .vp:active{cursor:grabbing}
+.mod.lay-caption.exp .back{display:none}
 .daylist.hid{opacity:0;pointer-events:none}
 /* ---- live day plan (WeekDayDetail etc.) ---- */
 .daylist{padding:22px 14px 0}
@@ -167,7 +174,7 @@ kbd{font:600 11px/1 var(--font);background:#fff;border:1px solid #ddd;border-bot
   <div class="side">
     <div>
       <h1>Plan only up close</h1>
-      <p class="sub"><b>Zoomed in</b> (default): calendar, a short picture of this week, and today's plan below. <b>Zoom out</b> and the plan steps away: the sheet becomes just the calendar on top and the picture filling everything below it. Tap any day in the calendar (or <kbd>+</kbd>) and you drop back in to that day's plan.</p>
+      <p class="sub"><b>Zoomed in</b> (default): calendar, a short picture of this week, and today's plan below. <b>Zoom out</b> and the plan steps away: the sheet becomes just the calendar on top and the picture filling everything below it. While zoomed out the picture is a map: <b>+ / −</b>, pinch or double-tap to zoom anywhere, drag to look around. <b>Today's plan</b> (or tapping a day in the calendar) brings the plan back.</p>
     </div>
     <div class="sec">Metaphor</div>
     <div class="opts" id="opts"></div>
@@ -790,19 +797,40 @@ function renderMod() {
   el.style.background = L.head === 'foot' ? '#fff' : w.bg;
   el.innerHTML = `<div class="vp" id="vp" style="background:${w.bg}"><div class="world" id="world"><svg width="${w.W}" height="${w.H}" viewBox="0 0 ${w.W} ${w.H}" style="overflow:visible">${w.art(e)}</svg></div>
     <div class="ov" id="mov">${ov}</div>
-    ${L.head === 'overlay' ? '<div class="hl" id="hl"></div>' : ''}${ctl}</div>
+    ${L.head === 'overlay' ? '<div class="hl" id="hl"></div>' : ''}${ctl}
+    <div class="fz"><button id="fin" title="Zoom in">+</button><button id="fout" title="Zoom out">−</button></div>
+    <button class="back" id="back">${CHEV('#fff', 13, 'd').replace('m6 9 6 6 6-6', 'm6 15 6-6 6 6')} Today's plan</button></div>
     ${L.head === 'foot' ? `<div class="foot"><div class="ft" id="hl"></div>${seg}</div>` : ''}`;
   bind(el);
   el.querySelectorAll('[data-lv]').forEach(b => b.onclick = ev => { ev.stopPropagation(); goLevel(+b.dataset.lv); });
   if (L.ctl === 'pm') { el.querySelector('#zout').onclick = ev => { ev.stopPropagation(); goLevel(S.ml + 1); }; el.querySelector('#zin').onclick = ev => { ev.stopPropagation(); goLevel(S.ml - 1); }; }
+  el.querySelector('#fin').onclick = ev => { ev.stopPropagation(); zoomFree(1.7); };
+  el.querySelector('#fout').onclick = ev => { ev.stopPropagation(); zoomFree(1 / 1.7); };
+  el.querySelector('#back').onclick = ev => { ev.stopPropagation(); goLevel(0); };
   if (L.ctl === 'cta') el.querySelector('#xcta').onclick = ev => { ev.stopPropagation(); goLevel(S.ml ? 0 : 2); };
-  el.onclick = ev => { if (ev.target.closest('[data-day],[data-act],.zc,.seg3,.xcta,.foot')) return; goLevel(L.ctl === 'cta' ? (S.ml ? 0 : 2) : S.ml < 2 ? S.ml + 1 : 0); };
+  el.onclick = ev => { if (el._drag || S.ml > 0 || ev.target.closest('[data-day],[data-act],.zc,.seg3,.xcta,.foot,.fz,.back')) return; goLevel(L.ctl === 'cta' ? (S.ml ? 0 : 2) : S.ml < 2 ? S.ml + 1 : 0); };
   document.getElementById('day').classList.toggle('hid', S.ml > 0); document.getElementById('scroller').classList.toggle('lock', S.ml > 0);
   el._hl = -1; applyZ();
 }
+// ---- free camera (new): once expanded, the picture is a map you can zoom and drag; only "Today's plan" brings the plan back ----
+let FC = null, fAnim = null;
+function keepIn(c) { const w = WORLDS[S.mod]; if (!w.bound) return c; c.s = Math.max(c.s, CW / w.W, c.h / w.H); const keep = (F, A, view, W) => { const v = view / c.s; if (v >= W) return W / 2 + (A - view / 2) / c.s; return clamp(F - A / c.s, 0, W - v) + A / c.s; }; c.F = { x: keep(c.F.x, c.A.x, CW, w.W), y: keep(c.F.y, c.A.y, c.h, w.H) }; return c; }
+function toFree(c) { return { s: c.s, F: { x: c.F.x + (CW / 2 - c.A.x) / c.s, y: c.F.y + (c.h / 2 - c.A.y) / c.s } }; }
+const sRange = () => [STOPS[2].s, STOPS[0].s];
+function freeCam() { const h = CH[1]; return keepIn({ s: FC.s, F: { ...FC.F }, A: { x: CW / 2, y: h / 2 }, h }); }
+function zcOf(s) { const [a, b] = sRange(); return clamp(2 * (Math.log(b) - Math.log(s)) / (Math.log(b) - Math.log(a) || 1), 0, 2); }
+function zoomFree(f, sx = CW / 2, sy = CH[1] / 2, dur = 280) {
+  if (S.ml === 0) return; if (!FC) { cancelAnimationFrame(zAnim); FC = toFree(camAt(Z)); } cancelAnimationFrame(fAnim);
+  const [lo, hi] = sRange(), s0 = FC.s, s1 = clamp(s0 * f, lo, hi), c0 = freeCam(), P0 = { x: c0.F.x + (sx - CW / 2) / s0, y: c0.F.y + (sy - CH[1] / 2) / s0 };
+  if (!dur) { FC = { s: s1, F: { x: P0.x - (sx - CW / 2) / s1, y: P0.y - (sy - CH[1] / 2) / s1 } }; FC = toFree(freeCam()); applyZ(); return; }
+  const t0 = performance.now(), step = now => { const k = clamp((now - t0) / dur, 0, 1), q = 1 - Math.pow(1 - k, 3), s = Math.exp(lerp(Math.log(s0), Math.log(s1), q));
+    FC = { s, F: { x: P0.x - (sx - CW / 2) / s, y: P0.y - (sy - CH[1] / 2) / s } }; applyZ(); if (k < 1) fAnim = requestAnimationFrame(step); else FC = toFree(freeCam()); };
+  fAnim = requestAnimationFrame(step);
+}
 function applyZ() {
   const el = document.getElementById('mod'), world = document.getElementById('world'); if (!world || !STOPS) return;
-  const c = camAt(Z), w = WORLDS[S.mod], Pa = P(), zc = clamp(Z, 0, 2);
+  const free = S.ml > 0 && FC, c = free ? freeCam() : camAt(Z), w = WORLDS[S.mod], Pa = P(), zc = free ? zcOf(c.s) : clamp(Z, 0, 2);
+  el.classList.toggle('exp', S.ml > 0);
   el.querySelector('#vp').style.height = c.h + 'px';
   world.style.transform = `translate(${c.A.x - c.F.x * c.s}px, ${c.A.y - c.F.y * c.s}px) scale(${c.s})`;
   el.querySelectorAll('#mov > *').forEach(o => {
@@ -816,14 +844,15 @@ function applyZ() {
     o.style.opacity = op; o.style.pointerEvents = op < .3 ? 'none' : 'auto';
   });
   const me = el.querySelector('#mov .me'); if (me) { const s = lerp(50, 30, zc / 2); me.style.width = s + 'px'; me.querySelector('img').style.width = me.querySelector('img').style.height = s + 'px'; const b = me.querySelector('.boat'); if (b) b.style.width = s * 1.3 + 'px'; }
-  const l = Math.round(zc); if (el._hl !== l) { el._hl = l; const hl = el.querySelector('#hl'), [a, b] = lines(l); hl.innerHTML = lay().head === 'foot' ? `<b>${a}</b><span>${b}</span>${exam().kind === 'none' && l === 2 ? '<span class="tap" data-act="date" style="color:#167ADF;font-weight:700;pointer-events:auto">Add date</span>' : ''}` : headline(l); hl.classList.toggle('bot', l === 2 && lay().head === 'overlay' && lay().k !== 'strip'); bind(hl); hl.animate([{ opacity: 0, transform: 'translateY(4px)' }, { opacity: 1, transform: 'none' }], { duration: 260, easing: 'ease-out' }); }
+  const l = Math.round(zc), hk = l + '' + S.ml; if (el._hl !== hk) { el._hl = hk; const hl = el.querySelector('#hl'), [a, b] = lines(l); hl.innerHTML = lay().head === 'foot' ? `<b>${a}</b><span>${b}</span>${exam().kind === 'none' && l === 2 ? '<span class="tap" data-act="date" style="color:#167ADF;font-weight:700;pointer-events:auto">Add date</span>' : ''}` : headline(l); hl.classList.toggle('bot', lay().head === 'overlay' && (S.ml > 0 || (l === 2 && lay().k !== 'strip'))); bind(hl); hl.animate([{ opacity: 0, transform: 'translateY(4px)' }, { opacity: 1, transform: 'none' }], { duration: 260, easing: 'ease-out' }); }
   const zi = el.querySelector('#zin'); if (zi) { zi.disabled = S.ml === 0; el.querySelector('#zout').disabled = S.ml === 2; }
+  const fi = el.querySelector('#fin'); if (fi && free) { const [lo, hi] = sRange(); fi.disabled = c.s >= hi * .99; el.querySelector('#fout').disabled = c.s <= lo * 1.01; }
   el.querySelectorAll('[data-lv]').forEach(b => b.classList.toggle('on', +b.dataset.lv === S.ml));
   const xc = el.querySelector('#xcta'); if (xc && xc._m !== S.ml + S.mod) { xc._m = S.ml + S.mod; xc.innerHTML = S.ml ? `${CHEV('#153356', 14, 'd').replace('m6 9 6 6 6-6', 'm6 15 6-6 6 6')} Back to this week` : `${mod().whole} ${CHEV('#153356', 14, 'd')}`; }
 }
 function animateZ(to) {
   cancelAnimationFrame(zAnim); const from = Z, t0 = performance.now(), dur = 520;
-  const step = now => { const k = clamp((now - t0) / dur, 0, 1), q = 1 - Math.pow(1 - k, 3); Z = from + (to - from) * q; applyZ(); if (k < 1) zAnim = requestAnimationFrame(step); };
+  const step = now => { const k = clamp((now - t0) / dur, 0, 1), q = 1 - Math.pow(1 - k, 3); Z = from + (to - from) * q; applyZ(); if (k < 1) zAnim = requestAnimationFrame(step); else if (S.ml > 0) { FC = toFree(camAt(Z)); applyZ(); } };
   zAnim = requestAnimationFrame(step);
 }
 // v9: the day plan only exists in the close view. Zoom out and the sheet is just the calendar + the picture, filling the screen.
@@ -831,7 +860,7 @@ function availH() {
   const sc = document.getElementById('scroller'), cal = document.getElementById('cal'), L = lay();
   return Math.max(300, sc.clientHeight - cal.offsetHeight - (L.k === 'bleed' ? -30 : 16) - (L.head === 'foot' ? 58 : 0) - (L.k === 'bleed' ? 0 : 16));
 }
-function refit() { if (!STOPS) return; const a = availH(); CH = [lay().ch[0], a, a]; STOPS = stops(); applyZ(); }
+function refit() { if (!STOPS) return; const a = availH(); CH = [lay().ch[0], a, a]; STOPS = stops(); if (FC) FC.s = clamp(FC.s, ...sRange()); applyZ(); }
 function goLevel(l) {
   l = clamp(l, 0, 2); const was = S.ml; S.ml = l;
   const sc = document.getElementById('scroller'), day = document.getElementById('day');
@@ -841,6 +870,7 @@ function goLevel(l) {
   sc.classList.toggle('lock', l > 0); day.classList.toggle('hid', l > 0);
   if (l > 0 && !was) day.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 180 });
   if (!l && was) day.animate([{ opacity: 0, transform: 'translateY(24px)' }, { opacity: 1, transform: 'none' }], { duration: 380, delay: 120, fill: 'backwards', easing: 'cubic-bezier(.2,.8,.2,1)' });
+  FC = null; cancelAnimationFrame(fAnim); document.getElementById('mod')._hl = -1;
   refit(); animateZ(l);
 }
 function zoom(dz) { goLevel(S.ml + dz); }
@@ -875,7 +905,14 @@ document.getElementById('scroller').addEventListener('scroll', ev => {
   else if (y < 4 && S.folded && S._scrollfold && !S._autofold) { S.folded = false; S._scrollfold = false; renderCal(); }
 });
 let snapT = 0;
-document.getElementById('mod').addEventListener('wheel', ev => { if (!ev.ctrlKey) return; ev.preventDefault(); cancelAnimationFrame(zAnim); Z = clamp(Z + ev.deltaY * .012, 0, 2); applyZ(); clearTimeout(snapT); snapT = setTimeout(() => goLevel(Math.round(Z)), 160); }, { passive: false });
+(() => {
+  const el = document.getElementById('mod'); let d = null, lastTap = 0;
+  el.addEventListener('pointerdown', ev => { if (S.ml > 0 && !FC) { cancelAnimationFrame(zAnim); FC = toFree(camAt(Z)); } if (S.ml === 0 || !FC || ev.target.closest('button,[data-day],[data-act]')) return; cancelAnimationFrame(fAnim); d = { x: ev.clientX, y: ev.clientY, F: { ...freeCam().F }, moved: false }; el._drag = false; el.setPointerCapture(ev.pointerId); });
+  el.addEventListener('pointermove', ev => { if (!d) return; const dx = ev.clientX - d.x, dy = ev.clientY - d.y; if (Math.hypot(dx, dy) > 4) d.moved = el._drag = true; FC = { s: FC.s, F: { x: d.F.x - dx / FC.s, y: d.F.y - dy / FC.s } }; FC = toFree(freeCam()); applyZ(); });
+  el.addEventListener('pointerup', ev => { if (!d) return; const r = el.querySelector('#vp').getBoundingClientRect(); if (!d.moved) { const now = Date.now(); if (now - lastTap < 320) zoomFree(1.8, ev.clientX - r.left, ev.clientY - r.top); lastTap = now; } d = null; setTimeout(() => el._drag = false, 0); });
+})();
+document.getElementById('mod').addEventListener('wheel', ev => { if (!ev.ctrlKey) return; ev.preventDefault();
+  if (S.ml > 0 && FC) { const r = document.getElementById('vp').getBoundingClientRect(); zoomFree(Math.exp(-ev.deltaY * .012), ev.clientX - r.left, ev.clientY - r.top, 0); return; } cancelAnimationFrame(zAnim); Z = clamp(Z + ev.deltaY * .012, 0, 2); applyZ(); clearTimeout(snapT); snapT = setTimeout(() => goLevel(Math.round(Z)), 160); }, { passive: false });
 document.addEventListener('keydown', ev => { if (!S.open) return; if (ev.key === '-' || ev.key === '_') zoom(1); if (ev.key === '+' || ev.key === '=') zoom(-1); if (ev.key === 'Escape') closeSheet(); });
 const PICKS = [{ kind: 'date', v: new Date(2026, 11, 13), t: 'Dec 13, 2026', s: 'Exact date' }, { kind: 'date', v: new Date(2027, 2, 7), t: 'Mar 7, 2027', s: 'NEET-PG 2027 (published)' }, { kind: 'date', v: new Date(2027, 7, 15), t: 'Aug 15, 2027', s: 'Exact date' }, { kind: 'month', v: new Date(2027, 5, 1), t: 'June 2027', s: 'Month only' }];
 function openDate() {
