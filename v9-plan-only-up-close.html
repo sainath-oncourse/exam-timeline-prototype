@@ -74,6 +74,11 @@ kbd{font:600 11px/1 var(--font);background:#fff;border:1px solid #ddd;border-bot
 .d.sel .sq{box-shadow:0 0 0 2px #fff,0 0 0 4px #1565C8}
 .d.out .sq{color:#C4CAD3;font-weight:500}
 .d .flag{position:absolute;top:-2px;right:2px;width:18px;height:18px;border-radius:999px;background:#1565C8;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 2px #fff}
+.cg{margin:8px 0 4px;font:700 11px/1 var(--font);letter-spacing:.04em;text-transform:uppercase;color:#9a958f}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:5px 10px;margin-top:8px;font:500 12.5px/1.4 var(--font)}.kv em{font-style:normal;color:#9a958f}
+.d.win::before{content:'';position:absolute;inset:6px 0;background:#E3EFFC}.d.win.w0::before{left:4px;border-radius:999px 0 0 999px}.d.win.w1::before{right:4px;border-radius:0 999px 999px 0}.d.win.w0.w1::before{border-radius:999px}
+.flag.dl{background:#fff!important;box-shadow:inset 0 0 0 1.5px #167ADF}
+.legend .sw{width:14px;height:10px;border-radius:5px;background:#E3EFFC;display:inline-block}
 .legend{padding:8px 6px 0;display:flex;align-items:center;gap:6px;font:500 12px/14px var(--font);color:#6B7280}
 .grabber{display:flex;justify-content:center;padding-top:10px}.grabber span{width:36px;height:4px;border-radius:999px;background:#E3E7ED}
 
@@ -180,10 +185,11 @@ kbd{font:600 11px/1 var(--font);background:#fff;border:1px solid #ddd;border-bot
     <div class="opts" id="opts"></div>
     <div class="sec">Layout under the calendar</div>
     <div class="opts" id="lays"></div>
-    <div class="sec">Exam date case</div>
-    <div class="seg" id="cases"></div>
+    <div class="sec">What we know about the exam date</div>
+    <div id="cases"></div>
+    <div class="card" id="said"></div>
     <div class="card" id="notes"></div>
-    <div class="card"><b>Rules for every option</b><ul><li><b>Close (default):</b> Rezzy on the path, this week's days as stones (done / missed / ahead). One line: "This week · 3 of 4 days done".</li><li><b>Middle:</b> the months around you as markers. "Week 6 of 25".</li><li><b>Whole:</b> start to goal, the date, and one number: "136 days to the summit".</li><li><b>No phases.</b> We don't know when a student moves from learning to revising, so the path only shows facts: days, months, the exam date.</li><li>Range, month or no date: the goal sits in fog or cloud until the date is exact.</li></ul></div>
+    <div class="card"><b>Rules for every option</b><ul><li><b>Close (default):</b> Rezzy on the path, this week's days as stones (done / missed / ahead). One line: "This week · 3 of 4 days done".</li><li><b>Middle:</b> the months around you as markers. "Week 6 of 25".</li><li><b>Whole:</b> start to goal, the date, and one number: "136 days to the summit".</li><li><b>No phases.</b> We don't know when a student moves from learning to revising, so the path only shows facts: days, months, the exam date.</li><li>Month, range, less than, more than or no date: the goal sits in fog until the date is exact. The less we know, the thicker the fog.</li><li>Ranges and "less than" are counted from the day the student answered, so 3–6 months asked on Sep 14 reads 2–5 months today. Once the window has passed, ask again.</li></ul></div>
     <div class="card"><b>What's live and what's new</b><div style="margin-top:4px">The sheet, calendar and pill come from the new-nav prototype (Exam calendar v10 / app-prototype). The day plan below uses live components (<code>WeekDayDetail</code> rows, the study-time row, <code>cta-glossy</code>, SF Pro Rounded, the 3D icons). <span class="tag new">NEW</span> is only the timeline module.</div></div>
     <div class="card"><b>References</b><ul><li>Vidia Summit Route: summit flag</li><li><a target="_blank" href="https://mobbin.com/screens/d2547f6d-14a5-4c78-ae50-e9be602c4622">Tolan</a>: character on the path to a milestone</li><li><a target="_blank" href="https://mobbin.com/screens/5bda2262-6340-4c2b-88ed-9bf108be1774">Ahead</a>: illustrated journey map</li><li>Flighty and Duolingo: one glanceable picture of progress</li><li style="margin-top:6px"><b>Art</b>: painted in SVG for this prototype, in the soft Oncourse style (bg-readiness sky). It's a direction for the illustrator, not final art.</li></ul></div>
   </div>
@@ -231,33 +237,47 @@ const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const lerp = (a, b, t) => a + (b - a) * t;
 const smooth = t => t * t * (3 - 2 * t);
 // ---------- exam + plan model (same as v1) ----------
+// What we collected, per course. Ranges and "less than" answers are counted from the day the student answered
+// (ASKED = plan start), so they shrink as time passes instead of sliding forward with today.
+const ASKED = START;
 const CASES = [
-  { k: 'date', t: 'Exact date', kind: 'date', v: new Date(2027, 2, 7) },
-  { k: 'range', t: 'Range', kind: 'range', v: [3, 6] },
-  { k: 'month', t: 'Month', kind: 'month', v: new Date(2027, 5, 1) },
-  { k: 'none', t: 'No date', kind: 'none' },
+  { k: 'neet', g: 'Exact date', ex: 'NEET-PG', kind: 'date', v: new Date(2027, 2, 7), said: 'Mar 7, 2027', how: 'Published date from the official notice. The student only confirms it.' },
+  { k: 'step1', g: 'Exact date', ex: 'USMLE Step 1', kind: 'date', v: new Date(2026, 11, 13), said: 'Dec 13, 2026', how: 'Their own booked test day (Prometric). Under 90 days, so the pill counts days.' },
+  { k: 'inicet', g: 'Exact month', ex: 'INI-CET', kind: 'month', v: new Date(2027, 4, 1), said: 'May 2027', how: 'The session month is announced before the exact day.' },
+  { k: 'cfa', g: 'Exact month', ex: 'CFA Level I', kind: 'month', v: new Date(2027, 7, 1), said: 'August 2027 window', how: 'CFA sits in testing windows (Feb, May, Aug, Nov). The student picks a window, not a day.' },
+  { k: 'nclex', g: 'Range', ex: 'NCLEX-RN', kind: 'range', v: [3, 6], said: '3–6 months', how: 'Graduates book after their Authorization to Test arrives, so we only ask for a range.' },
+  { k: 'mcat', g: 'Range', ex: 'MCAT', kind: 'range', v: [6, 12], said: '6–12 months', how: 'Range picked in onboarding. Test dates open later.' },
+  { k: 'neetlt', g: 'Less than', ex: 'NEET-PG', kind: 'lt', v: 3, said: 'Less than 3 months', how: 'Kabir\'s onboarding answer. Only a latest date is known.' },
+  { k: 'plab', g: 'Less than', ex: 'PLAB 1', kind: 'lt', v: 6, said: 'Less than 6 months', how: 'Onboarding answer. Only a latest date is known.' },
+  { k: 'step1gt', g: 'More than', ex: 'USMLE Step 1', kind: 'gt', v: 12, said: 'More than a year', how: 'An M1 student. Only an earliest date is known.' },
+  { k: 'none', g: 'No date', ex: 'UKMLA', kind: 'none', said: 'Not sure yet', how: 'Skipped the question, or "not sure yet".' },
 ];
-const S = { opt: 'A', c: 'date', setTo: null, open: false, level: 0, sel: TODAY };
+const S = { opt: 'A', c: 'neet', setTo: null, open: false, level: 0, sel: TODAY };
+const moTo = d => Math.max(0, Math.round(diff(TODAY, d) / 30.4));
 function exam() {
   const c = CASES.find(x => x.k === S.c), e = S.setTo ? { ...c, ...S.setTo } : c;
   if (e.kind === 'date') return { ...e, end: e.v, win: null };
   if (e.kind === 'month') return { ...e, end: e.v, win: [e.v, new Date(e.v.getFullYear(), e.v.getMonth() + 1, 0)] };
-  if (e.kind === 'range') { const a = addM(TODAY, e.v[0]), b = addM(TODAY, e.v[1]); return { ...e, end: a, win: [a, b] }; }
-  return { kind: 'none' };
+  if (e.kind === 'range') { const a = addM(ASKED, e.v[0]), b = addM(ASKED, e.v[1]); return { ...e, end: a, win: [a, b] }; }
+  if (e.kind === 'lt') { const b = addM(ASKED, e.v); return { ...e, end: b, win: [TODAY, b] }; } // any day up to the deadline: aim for the latest
+  if (e.kind === 'gt') { const a = addM(ASKED, e.v); return { ...e, end: a, win: [a, null] }; } // open-ended: aim for the earliest
+  return { ...e, kind: 'none' };
+}
+// the one number, in the student's own terms
+function bigN(e) {
+  if (e.kind === 'date') return `${diff(TODAY, e.v)} days`;
+  if (e.kind === 'month') return `${moTo(e.v)} months`;
+  if (e.kind === 'range') return `${moTo(e.win[0])}–${moTo(e.win[1])} months`;
+  if (e.kind === 'lt') { const d = diff(TODAY, e.end); return d <= 60 ? `Under ${d} days` : `Under ${Math.ceil(d / 30.4)} months`; }
+  if (e.kind === 'gt') return `${moTo(e.end)}+ months`;
+  return '';
 }
 function countdown() {
   const e = exam();
   if (e.kind === 'none') return 'Set your exam date';
+  if (e.kind === 'month') return `${bigN(e)} to go · ${MON[e.v.getMonth()]}`;
   if (e.kind === 'date') { const d = diff(TODAY, e.v); return d <= 90 ? `${d} days to go` : `${Math.round(d / 30.4)} months to go`; }
-  if (e.kind === 'month') return `${(e.v.getFullYear() - TODAY.getFullYear()) * 12 + e.v.getMonth() - TODAY.getMonth()} months to go · ${MON[e.v.getMonth()]}`;
-  return `${e.v[0]}–${e.v[1]} months to go`;
-}
-function shortCd() {
-  const e = exam();
-  if (e.kind === 'none') return 'Add exam date';
-  if (e.kind === 'date') return `NEET-PG · ${diff(TODAY, e.v)} days`;
-  if (e.kind === 'month') return `NEET-PG · ${MS[e.v.getMonth()]} ${e.v.getFullYear()}`;
-  return `NEET-PG · ${e.v[0]}–${e.v[1]} mo`;
+  return `${bigN(e)} to go`;
 }
 // camps worked back from the earliest exam date: last 4 weeks = summit push, ~38% before = camp 2, rest = base camp
 function phases() {
@@ -272,6 +292,16 @@ function phases() {
 const phaseOf = d => { const p = phases(); return p ? p.find(x => d >= x.from && d < addD(x.to, 1)) || null : null; };
 function isMock(d) { const p = phases(); if (!p || d.getDay() !== 0 || d < p[1].from || d >= exam().end) return false; return Math.floor(diff(wkStart(p[1].from), d) / 7) % 2 === 1; }
 const isExam = d => { const e = exam(); return e.kind === 'date' && same(d, e.v); };
+// month / range: shade the days it could fall on. "Less than" only has a last day; "more than" only a first day.
+const inWin = d => { const e = exam(); return (e.kind === 'month' || e.kind === 'range') && d >= e.win[0] && d <= e.win[1]; };
+const isDeadline = d => { const e = exam(); return (e.kind === 'lt' || e.kind === 'gt') && same(d, e.end); };
+function calNote(e) {
+  const sw = '<i class="sw"></i>';
+  if (e.kind === 'month' || e.kind === 'range') return `<div class="legend">${sw}${e.ex} could be any shaded day</div>`;
+  if (e.kind === 'lt') return `<div class="legend">${FLAG('#167ADF', 9)}Latest day for ${e.ex}: ${fmt(e.end)}</div>`;
+  if (e.kind === 'gt') return `<div class="legend">${FLAG('#167ADF', 9)}${e.ex} is after ${fmt(e.end)}, ${e.end.getFullYear()}</div>`;
+  return '';
+}
 const weekNo = d => Math.floor(diff(wkStart(START), wkStart(d)) / 7) + 1;
 const totalWeeks = () => { const e = exam(); return e.kind === 'none' ? null : weekNo(e.end); };
 function rec(d) {
@@ -312,9 +342,9 @@ function weekStrip(center) {
 function dayDetail(d) {
   const r = rec(d), t = same(d, TODAY), pl = plan(d), p = phaseOf(d), e = exam();
   const eb = `<div class="eyebrow" style="margin-bottom:10.5px">${t ? 'Today' : DAYN[d.getDay()]} · ${MON[d.getMonth()]} ${d.getDate()}</div>`;
-  if (isExam(d)) return eb + `<div class="inset" style="padding:24px;text-align:center"><div style="width:56px;height:56px;margin:0 auto;border-radius:99px;background:#167ADF;display:flex;align-items:center;justify-content:center">${FLAG('#fff', 24)}</div><div style="margin-top:12px;font:700 17.5px/1.3 var(--font);color:#272625">Summit day: NEET-PG</div><div style="margin-top:4px;font:400 15px/1.4 var(--font);color:#52504C">No plan today. Trust the climb.</div></div>`;
+  if (isExam(d)) return eb + `<div class="inset" style="padding:24px;text-align:center"><div style="width:56px;height:56px;margin:0 auto;border-radius:99px;background:#167ADF;display:flex;align-items:center;justify-content:center">${FLAG('#fff', 24)}</div><div style="margin-top:12px;font:700 17.5px/1.3 var(--font);color:#272625">Summit day: ${e.ex}</div><div style="margin-top:4px;font:400 15px/1.4 var(--font);color:#52504C">No plan today. Trust the climb.</div></div>`;
   if (r.st === 'before') return eb + `<div class="note">Before your plan started on ${fmt(START)}.</div>`;
-  if (e.kind !== 'none' && d > (e.win ? e.win[1] : e.end)) return eb + `<div class="note">After your exam. Nothing planned.</div>`;
+  if (e.kind !== 'none' && e.kind !== 'gt' && d > (e.win ? e.win[1] : e.end)) return eb + `<div class="note">After your exam. Nothing planned.</div>`;
   const past = ['done', 'partial', 'none'].includes(r.st), nDone = r.done || 0;
   const subj = pl.subj.map(s => `<div class="subj" style="border-color:${s[3]}"><div class="tile" style="background:${s[2]}">${s[1]}</div><b>${s[0]}</b><span style="padding-right:14px">${CHEV('#141B34', 20, 'd')}</span></div>`).join('');
   const total = planMin(d);
@@ -403,10 +433,11 @@ function trailSvg() {
   <path d="${TRAIL}" fill="none" stroke="#1961b4" stroke-opacity=".5" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="1.5 8"/>
   <path d="${TRAIL}" fill="none" stroke="#167adf" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="${lt} ${TL * 2}"/>`;
 }
-// range / month / no date: the summit sits in cloud until the date is firm
+// month / range / less than / more than / no date: the summit sits in cloud until the date is firm
+const FOG = { date: 0, month: .7, lt: .8, range: .9, gt: .95, none: 1 };
 function summitCloud() {
   const e = exam(); if (e.kind === 'date') return '';
-  const o = e.kind === 'none' ? 1 : e.kind === 'range' ? .92 : .7;
+  const o = FOG[e.kind];
   return `<g opacity="${o}"><ellipse cx="${PEAK.x}" cy="${PEAK.y + 30}" rx="150" ry="62" fill="#fff"/><ellipse cx="${PEAK.x - 90}" cy="${PEAK.y + 60}" rx="80" ry="38" fill="#fff"/><ellipse cx="${PEAK.x + 96}" cy="${PEAK.y + 52}" rx="86" ry="40" fill="#fff"/></g>`;
 }
 
@@ -425,7 +456,7 @@ S.view = TODAY; S.folded = false; S.mod = 'mountain'; S.ml = 0; S.lay = 'card';
 function renderCal() {
   const e = exam(), v = new Date(S.view.getFullYear(), S.view.getMonth(), 1);
   let cells = '';
-  const dayCell = (d, out) => { const r = rec(d), t = same(d, TODAY), sel = same(d, S.sel), ex = isExam(d); const f = r.min != null ? r.min / 30 : 0; return `<div class="d ${r.st === 'future' || r.st === 'before' ? 'fut' : ''} ${t ? 'today' : ''} ${sel ? 'sel' : ''} ${out ? 'out' : ''}" data-day="${d.getTime()}"><div class="sq">${r.min != null && !out ? RING(f) : ''}<span class="n">${d.getDate()}</span></div>${ex && !out ? `<span class="flag">${FLAG('#fff', 9)}</span>` : ''}</div>`; };
+  const dayCell = (d, out) => { const r = rec(d), t = same(d, TODAY), sel = same(d, S.sel), ex = isExam(d), w = inWin(d), dl = isDeadline(d); const f = r.min != null ? r.min / 30 : 0; return `<div class="d ${r.st === 'future' || r.st === 'before' ? 'fut' : ''} ${w ? 'win' : ''} ${w && !inWin(addD(d, -1)) ? 'w0' : ''} ${w && !inWin(addD(d, 1)) ? 'w1' : ''} ${t ? 'today' : ''} ${sel ? 'sel' : ''} ${out ? 'out' : ''}" data-day="${d.getTime()}"><div class="sq">${r.min != null && !out ? RING(f) : ''}<span class="n">${d.getDate()}</span></div>${ex && !out ? `<span class="flag">${FLAG('#fff', 9)}</span>` : ''}${dl && !out ? `<span class="flag dl">${FLAG('#167ADF', 9)}</span>` : ''}</div>`; };
   if (S.folded) { const ws = wkStart(S.sel); for (let i = 0; i < 7; i++) cells += dayCell(addD(ws, i), false); }
   else { const off = (v.getDay() + 6) % 7, start = addD(v, -off); for (let i = 0; i < 42; i++) { const d = addD(start, i); if (i >= 35 && d.getMonth() !== v.getMonth()) break; cells += dayCell(d, d.getMonth() !== v.getMonth()); } }
   const head = S.folded ? S.sel : v;
@@ -434,7 +465,7 @@ function renderCal() {
     <div class="arrows"><div class="round tap" id="prev"><svg width="15" height="15" viewBox="0 0 24 24" style="fill:none;stroke:#1F2937;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round"><path d="m15 6-6 6 6 6"/></svg></div><div class="round tap" id="next"><svg width="15" height="15" viewBox="0 0 24 24" style="fill:none;stroke:#1F2937;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round"><path d="m9 6 6 6-6 6"/></svg></div></div></div>
     <div class="wd">${WD.map((w, i) => `<span class="${i === (TODAY.getDay() + 6) % 7 ? 't' : ''}">${w}</span>`).join('')}</div>
     <div class="grid">${cells}</div>
-    ${S.folded ? '' : `<div class="legend"><svg width="12" height="12" viewBox="0 0 38 38"><circle cx="19" cy="19" r="15" fill="none" stroke="#E8EEF6" stroke-width="7"/><path d="M19 4 A15 15 0 0 1 34 19" fill="none" stroke="#1F7AE0" stroke-width="7"/></svg>Ring = study time · full at 30 min</div>`}
+    ${S.folded ? '' : `<div class="legend"><svg width="12" height="12" viewBox="0 0 38 38"><circle cx="19" cy="19" r="15" fill="none" stroke="#E8EEF6" stroke-width="7"/><path d="M19 4 A15 15 0 0 1 34 19" fill="none" stroke="#1F7AE0" stroke-width="7"/></svg>Ring = study time · full at 30 min</div>${calNote(e)}`}
     <div class="grabber tap" id="grab"><span></span></div>`;
   const C = document.getElementById('cal');
   C.querySelector('#close').onclick = closeSheet;
@@ -473,7 +504,7 @@ const MODS = [
   { k: 'mountain', whole: 'See the whole climb', name: 'Mountain', tag: 'Climb to the summit', unit: 'to the summit', goalWord: 'summit',
     desc: 'The v2 climb, now inside the card. Zoomed in, Rezzy stands on the trail with this week\'s days as stepping stones. Pull back and the slope opens up with month markers, then the whole mountain with the flag and the exam date.',
     pros: 'Universal: the top is where you need to go. Effort reads as climbing.', cons: 'Needs a proper illustration pass to feel premium.' },
-  { k: 'road', whole: 'See the whole road', name: 'Road ahead', tag: 'Drive to the city', unit: 'to NEET-PG', goalWord: 'city',
+  { k: 'road', whole: 'See the whole road', name: 'Road ahead', tag: 'Drive to the city', get unit() { return 'to ' + exam().ex; }, goalWord: 'city',
     desc: 'A country road winding to a city on the horizon. Close up, it\'s the stretch of road you\'re on this week. Pull back and the road narrows into the distance, with the city (the exam) where it meets the sky.',
     pros: 'Calm. A far horizon doesn\'t feel like failing, so it suits long timelines.', cons: 'Less "achievement" than a summit.' },
   { k: 'sea', whole: 'See the whole crossing', name: 'Lighthouse', tag: 'Sail to the light', unit: 'to the lighthouse', goalWord: 'lighthouse',
@@ -525,9 +556,9 @@ function illoWorld(o) {
     bound: true, chip: o.chip, W: o.W, H: o.H, d: smoothPath(o.pts, o.tension ?? .2), goal: { x: o.goal[0], y: o.goal[1] }, flag: o.flag,
     whole: { x0: o.whole[0], y0: o.whole[1], x1: o.whole[2], y1: o.whole[3] }, bg: o.bg, maxS: o.maxS, dayPx: o.dayPx,
     art(e) {
-      if (!this._base) this._base = o.paint.call(this, sampler(o.id, this.d)); // the painting doesn't change; cache it
+      if (this._bk !== e.ex) { this._bk = e.ex; this._base = o.paint.call(this, sampler(o.id, this.d)); } // the painting only changes with the exam name; cache it
       const Pa = sampler(o.id, this.d), lt = progress() * Pa.L, g = this.goal;
-      const fog = e.kind === 'date' ? '' : fogBlob(o.id, g.x + o.fog[0], g.y + o.fog[1], o.fog[2], e.kind === 'none' ? 1 : .9);
+      const fog = e.kind === 'date' ? '' : fogBlob(o.id, g.x + o.fog[0], g.y + o.fog[1], o.fog[2], FOG[e.kind]);
       return `${this._base}${o.trail(this.d, lt, Pa.L, e)}${fog}`;
     },
   };
@@ -716,7 +747,7 @@ const WORLDS = {
           <ellipse cx="560" cy="430" rx="70" ry="36" fill="#9CCBDC" stroke="${ink}" stroke-opacity=".5" stroke-width="2"/>
           ${mtns}${forest}
           <g transform="translate(150 1320)"><circle r="62" fill="none" stroke="${ink}" stroke-opacity=".5" stroke-width="2"/><path d="M0 -70 L12 -12 L70 0 L12 12 L0 70 L-12 12 L-70 0 L-12 -12 Z" fill="#E9D8AE" stroke="${ink}" stroke-width="2"/><path d="M0 -70 L12 -12 L0 0 Z M70 0 L12 12 L0 0 Z M0 70 L-12 12 L0 0 Z M-70 0 L-12 -12 L0 0 Z" fill="${ink}" opacity=".75"/><text y="-80" text-anchor="middle" font-family="Georgia,serif" font-weight="700" font-size="24" fill="${ink}">N</text></g>
-          <g transform="translate(600 120)"><path d="M-260 -30 L260 -30 L230 0 L260 30 L-260 30 L-230 0 Z" fill="#E7D3A6" stroke="${ink}" stroke-width="2.5"/><text y="10" text-anchor="middle" font-family="Georgia,serif" font-style="italic" font-weight="700" font-size="30" fill="${ink}">The way to NEET-PG</text></g>
+          <g transform="translate(600 120)"><path d="M-260 -30 L260 -30 L230 0 L260 30 L-260 30 L-230 0 Z" fill="#E7D3A6" stroke="${ink}" stroke-width="2.5"/><text y="10" text-anchor="middle" font-family="Georgia,serif" font-style="italic" font-weight="700" font-size="30" fill="${ink}">The way to ${exam().ex}</text></g>
           <path d="M210 1290 h80 v-30 l-40 -26 l-40 26 Z" fill="#F4E8CB" stroke="${ink}" stroke-width="2.5" stroke-linejoin="round"/>`;
       },
       trail: (d, lt, L, e) => `<path d="${d}" fill="none" stroke="#A3301F" stroke-opacity=".8" stroke-width="6" stroke-dasharray="20 14" stroke-linecap="round"/>
@@ -754,20 +785,20 @@ const toScreen = (c, p) => ({ x: (p.x - c.F.x) * c.s + c.A.x, y: (p.y - c.F.y) *
 function lines(l) {
   const e = exam(), ws = wkStart(TODAY), m = mod();
   if (l === 0) { let done = 0, n = 0; for (let k = 0; k < 7; k++) { const d = addD(ws, k); if (d > TODAY) break; n++; const r = rec(d); if (r.st === 'done' || r.st === 'partial' || r.st === 'today') done++; } return ['This week', `${done} of ${n} days done`]; }
-  if (l === 1) { const tw = totalWeeks(); return [`Week ${weekNo(TODAY)}`, tw ? `of ${e.win ? '~' : ''}${tw}` : 'so far']; }
+  if (l === 1) { const tw = totalWeeks(); return [`Week ${weekNo(TODAY)}`, tw ? `of ${e.kind === 'gt' ? tw + '+' : (e.win ? '~' : '') + tw}` : 'so far']; }
   if (e.kind === 'none') return ['Where to?', 'Add your exam date'];
-  const n = e.kind === 'date' ? `${diff(TODAY, e.v)} days` : e.kind === 'month' ? `${(e.v.getFullYear() - TODAY.getFullYear()) * 12 + e.v.getMonth() - TODAY.getMonth()} months` : `${e.v[0]}–${e.v[1]} months`;
+  const n = bigN(e);
   return [n, m.unit];
 }
 function headline(l) {
   const e = exam(), ws = wkStart(TODAY), m = mod();
   if (l === 0) { let done = 0, n = 0; for (let k = 0; k < 7; k++) { const d = addD(ws, k); if (d > TODAY) break; n++; const r = rec(d); if (r.st === 'done' || r.st === 'partial' || r.st === 'today') done++; } return `<div class="pl"><b>This week</b><span>${done} of ${n} days done</span></div>`; }
-  if (l === 1) { const tw = totalWeeks(); return `<div class="pl"><b>Week ${weekNo(TODAY)}</b><span>${tw ? `of ${e.win ? '~' : ''}${tw}` : 'so far'}</span></div>`; }
+  if (l === 1) { const tw = totalWeeks(); return `<div class="pl"><b>Week ${weekNo(TODAY)}</b><span>${tw ? `of ${e.kind === 'gt' ? tw + '+' : (e.win ? '~' : '') + tw}` : 'so far'}</span></div>`; }
   if (e.kind === 'none') return `<div class="big"><div class="n">Where to?</div><div class="u">Add your exam date to see the ${m.goalWord}</div><span class="cta tap" data-act="date" style="display:inline-block;width:auto;margin-top:10px;padding:9px 14px;font-size:12px;pointer-events:auto">ADD EXAM DATE</span></div>`;
-  const n = e.kind === 'date' ? `${diff(TODAY, e.v)} days` : e.kind === 'month' ? `${(e.v.getFullYear() - TODAY.getFullYear()) * 12 + e.v.getMonth() - TODAY.getMonth()} months` : `${e.v[0]}–${e.v[1]} months`;
+  const n = bigN(e);
   return `<div class="big"><div class="n">${n}</div><div class="u">${m.unit}</div></div>`;
 }
-function goalChip(e) { return e.kind === 'none' ? 'Add your exam date<small>to see where you\'re going</small>' : `NEET-PG<small>${exLabel(e)}</small>`; }
+function goalChip(e) { return e.kind === 'none' ? 'Add your exam date<small>to see where you\'re going</small>' : `${e.ex}<small>${exLabel(e)}</small>`; }
 
 function renderMod() {
   const el = document.getElementById('mod'), e = exam(), w = WORLDS[S.mod], Pa = P(), ws = wkStart(TODAY);
@@ -874,7 +905,7 @@ function goLevel(l) {
   refit(); animateZ(l);
 }
 function zoom(dz) { goLevel(S.ml + dz); }
-function exLabel(e) { return e.kind === 'date' ? `${fmt(e.v)}, ${e.v.getFullYear()}` : e.kind === 'month' ? `${MON[e.v.getMonth()]} ${e.v.getFullYear()}` : `${fmt(e.win[0])} – ${fmt(e.win[1])}`; }
+function exLabel(e) { const y = d => `${fmt(d)}, ${d.getFullYear()}`; return e.kind === 'date' ? y(e.v) : e.kind === 'month' ? `${e.k === 'cfa' ? 'Window · ' : ''}${MON[e.v.getMonth()]} ${e.v.getFullYear()}` : e.kind === 'lt' ? `By ${y(e.end)}` : e.kind === 'gt' ? `After ${y(e.end)}` : `${fmt(e.win[0])} – ${y(e.win[1])}`; }
 
 // ---------- wiring ----------
 function isMockWeek(ws) { for (let k = 0; k < 7; k++) if (isMock(addD(ws, k))) return true; return false; }
@@ -885,7 +916,12 @@ function bind(root) {
 }
 function renderSide() {
   document.getElementById('opts').innerHTML = MODS.map((m, i) => `<button class="opt ${m.k === S.mod ? 'on' : ''}" data-m="${m.k}"><b><i>${i + 1}</i>${m.name}</b><span>${m.tag}</span></button>`).join('');
-  document.getElementById('cases').innerHTML = CASES.map(c => `<button class="${c.k === S.c && !S.setTo ? 'on' : ''}" data-c="${c.k}">${c.t}</button>`).join('');
+  const groups = [...new Set(CASES.map(c => c.g))];
+  document.getElementById('cases').innerHTML = groups.map(g => `<div class="cg">${g}</div><div class="opts">${CASES.filter(c => c.g === g).map(c => `<button class="opt ${c.k === S.c && !S.setTo ? 'on' : ''}" data-c="${c.k}"><b>${c.ex}</b><span>"${c.said}"</span></button>`).join('')}</div>`).join('');
+  const e = exam(), shows = e.kind === 'none' ? 'No number, no window. The goal sits in thick fog and the whole view asks for a date.' : `Pill: <b>${countdown()}</b> · Whole view: <b>${bigN(e)}</b> ${mod().unit} · Goal chip: <b>${e.ex}, ${exLabel(e)}</b>`;
+  const cal = { date: 'A flag on the exam day.', month: 'The whole month is shaded.', range: 'Every day in the range is shaded.', lt: 'Only the last possible day is flagged. Everything before it is possible, so nothing is shaded.', gt: 'Only the first possible day is flagged. The window is open-ended.', none: 'Nothing marked.' }[e.kind];
+  const fog = { date: 'none, the goal is clear', month: 'light', lt: 'light to medium', range: 'medium', gt: 'heavy', none: 'thick' }[e.kind];
+  document.getElementById('said').innerHTML = `<b>${e.ex}${S.setTo ? ' · updated in the app' : ''}</b><div style="margin-top:4px;color:#52504c">${e.how}</div><div class="kv"><em>Collected</em><span>${S.setTo ? exLabel(e) : '"' + e.said + '"'}${e.kind === 'range' || e.kind === 'lt' || e.kind === 'gt' ? ` on ${fmt(ASKED)}` : ''}</span><em>Shows</em><span>${shows}</span><em>Calendar</em><span>${cal}</span><em>Fog at goal</em><span>${fog}</span></div>`;
   const m = mod();
   document.getElementById('notes').innerHTML = `<b>${m.name}</b> <span style="color:#8C8884">· This week → months → whole way</span><div style="margin-top:4px">${m.desc}</div><div class="pc"><div><em style="color:#1a7b4a">Good</em>${m.pros}</div><div><em style="color:#cd4035">Watch out</em>${m.cons}</div></div><div style="margin-top:12px;padding-top:10px;border-top:1px solid #eee"><b>Layout: ${lay().name}</b><div style="margin-top:4px">${lay().desc}</div></div>`;
   document.getElementById('lays').innerHTML = LAYS.map((l, i) => `<button class="opt ${l.k === S.lay ? 'on' : ''}" data-l="${l.k}"><b><i>${String.fromCharCode(65 + i)}</i>${l.name}</b><span>${l.tag}</span></button>`).join('');
@@ -914,12 +950,12 @@ let snapT = 0;
 document.getElementById('mod').addEventListener('wheel', ev => { if (!ev.ctrlKey) return; ev.preventDefault();
   if (S.ml > 0 && FC) { const r = document.getElementById('vp').getBoundingClientRect(); zoomFree(Math.exp(-ev.deltaY * .012), ev.clientX - r.left, ev.clientY - r.top, 0); return; } cancelAnimationFrame(zAnim); Z = clamp(Z + ev.deltaY * .012, 0, 2); applyZ(); clearTimeout(snapT); snapT = setTimeout(() => goLevel(Math.round(Z)), 160); }, { passive: false });
 document.addEventListener('keydown', ev => { if (!S.open) return; if (ev.key === '-' || ev.key === '_') zoom(1); if (ev.key === '+' || ev.key === '=') zoom(-1); if (ev.key === 'Escape') closeSheet(); });
-const PICKS = [{ kind: 'date', v: new Date(2026, 11, 13), t: 'Dec 13, 2026', s: 'Exact date' }, { kind: 'date', v: new Date(2027, 2, 7), t: 'Mar 7, 2027', s: 'NEET-PG 2027 (published)' }, { kind: 'date', v: new Date(2027, 7, 15), t: 'Aug 15, 2027', s: 'Exact date' }, { kind: 'month', v: new Date(2027, 5, 1), t: 'June 2027', s: 'Month only' }];
+const PICKS = [{ kind: 'date', v: new Date(2026, 11, 13), t: 'Dec 13, 2026', s: 'Exact date' }, { kind: 'date', v: new Date(2027, 2, 7), t: 'Mar 7, 2027', s: 'Published date' }, { kind: 'date', v: new Date(2027, 7, 15), t: 'Aug 15, 2027', s: 'Exact date' }, { kind: 'month', v: new Date(2027, 5, 1), t: 'June 2027', s: 'Month only' }];
 function openDate() {
   const e = exam();
   document.getElementById('bsheet').innerHTML = `<div class="handle"></div><h3>When's your exam?</h3><p>Your timeline and plan will shift to fit the new date.</p>${PICKS.map((x, i) => `<div class="optrow ${e.v && e.kind === x.kind && x.v.getTime() === e.v.getTime() ? 'on' : ''}" data-p="${i}">${x.t}<span>${x.s}</span></div>`).join('')}`;
   document.getElementById('scrim').classList.add('open'); document.getElementById('bsheet').classList.add('open');
-  document.querySelectorAll('[data-p]').forEach(el => el.onclick = () => { const x = PICKS[+el.dataset.p]; S.c = x.kind === 'date' ? 'date' : 'month'; S.setTo = { kind: x.kind, v: x.v }; closeDate(); render(); toast(`Exam date saved: ${x.t}. Your timeline updated.`); });
+  document.querySelectorAll('[data-p]').forEach(el => el.onclick = () => { const x = PICKS[+el.dataset.p]; S.setTo = { kind: x.kind, v: x.v }; closeDate(); render(); toast(`Exam date saved: ${x.t}. Your timeline updated.`); });
 }
 function closeDate() { document.getElementById('scrim').classList.remove('open'); document.getElementById('bsheet').classList.remove('open'); }
 document.getElementById('scrim').onclick = closeDate;
