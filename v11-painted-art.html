@@ -422,7 +422,7 @@ function illoWorld(o) {
       if (this._bk !== e.ex) { this._bk = e.ex; this._base = o.paint.call(this, sampler(o.id, this.d)); } // the painting only changes with the exam name; cache it
       const Pa = sampler(o.id, this.d), lt = progress() * Pa.L, g = this.goal;
       const fog = e.kind === 'date' ? '' : fogBlob(o.id, g.x + o.fog[0], g.y + o.fog[1], o.fog[2], FOG[e.kind]);
-      const base = S.art === 'paint' && ART_OK[o.id] ? `<image href="${ART_SRC[o.id]}" x="0" y="0" width="${o.W}" height="${o.H}" preserveAspectRatio="none"/>${this._over || ''}` : this._base;
+      const base = S.art === 'paint' && ART_OK[o.id] ? `<image href="${ART_SRC[o.id]}" x="0" y="0" width="${o.W}" height="${o.H}" preserveAspectRatio="none"/>${skyFade(o.id, o.W)}${this._over || ''}` : this._base;
       return `${base}${o.trail(this.d, lt, Pa.L, e)}${fog}`;
     },
   };
@@ -710,6 +710,8 @@ const SKY_VEC = { mountain: '#6cabe9', road: '#81b9ee', sea: '#7cb6ee', map: '#e
 const ART_SRC = { mt: 'art/mountain.jpg', rd: 'art/road.jpg', sea: 'art/sea.jpg', map: 'art/map.jpg' }, ART_OK = {};
 const SKY_ART = { mountain: '#6cabe9', road: '#81b9ee', sea: '#7cb6ee', map: '#e0c99b' };
 const W2ID = { mountain: 'mt', road: 'rd', sea: 'sea', map: 'map' }, sky = m => (S.art === 'paint' && ART_OK[W2ID[m]] ? SKY_ART : SKY_VEC)[m];
+// soften the painting's top edge into the sky fill above it
+const skyFade = (id, W) => { const c = SKY_ART[ID2W[id]]; return `<defs><linearGradient id="${id}-fade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${c}"/><stop offset="1" stop-color="${c}" stop-opacity="0"/></linearGradient></defs><rect width="${W}" height="140" fill="url(#${id}-fade)"/>`; };
 // the sky above the art takes the painting's own top-edge colour (median of the top row) so there's no seam
 const ID2W = Object.fromEntries(Object.entries(W2ID).map(([w, id]) => [id, w]));
 Object.entries(ART_SRC).forEach(([id, src]) => { const im = new Image(); im.onload = () => {
