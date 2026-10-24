@@ -186,6 +186,8 @@ kbd{font:600 11px/1 var(--font);background:#fff;border:1px solid #ddd;border-bot
 #seg button{flex:1;height:32px;border:0;border-radius:999px;background:transparent;font:700 13px/1 var(--font);color:#52504C;cursor:pointer;transition:background .2s,color .2s}
 #seg button.on{background:#167ADF;color:#fff;box-shadow:inset 0 2px 4px rgba(255,255,255,.4)}
 .rb{width:42px;height:42px;border-radius:999px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none}
+#mini{position:absolute;right:14px;top:166px;z-index:15;width:66px;height:82px;border-radius:14px;overflow:hidden;border:2.5px solid #fff;box-shadow:0 3px 12px rgba(10,30,60,.28);cursor:pointer;transition:opacity .25s}
+#mini svg{display:block;width:100%;height:100%}
 #hl{position:absolute;left:14px;top:178px;z-index:15;pointer-events:none}#hl *{pointer-events:auto}
 .phone[data-lv="2"] #hl{top:auto;bottom:188px}
 #hl .pl{display:inline-flex;align-items:center;gap:7px;padding:9px 13px;border-radius:999px;background:rgba(255,255,255,.88);backdrop-filter:blur(12px);box-shadow:0 2px 8px rgba(10,30,60,.12);color:#153356}
@@ -272,6 +274,7 @@ kbd{font:600 11px/1 var(--font);background:#fff;border:1px solid #ddd;border-bot
       </div>
     </div>
     <div id="hl"></div>
+    <div id="mini" class="press" title="See the whole journey"></div>
     <div class="fz2"><button id="zin">+</button><button id="zout">−</button></div>
     <div id="bar"></div>
     <div id="card"></div>
@@ -667,13 +670,16 @@ function stops() {
   const week = center({ s: Math.min(clamp(34 / (dt * Pa.L), VW / w.W, w.maxS || 8), today_s / 1.8), F: Pa.at(tm), A: { x: VW / 2, y: 430 } });
   // Journey: from Rezzy up to the goal, between the top bar and the headline
   const me = Pa.at(t0), g = w.goal, whole = fitBox({ x0: Math.min(me.x, g.x) - 60, x1: Math.max(me.x, g.x) + 60, y0: Math.min(me.y, g.y), y1: Math.max(me.y, g.y) }, 290, 600, 1);
+  // v11: painted art is ~1 image px per world unit, so cap the close views to keep it sharp and keep the scenery in frame
+  if (S.art === 'paint' && ART_OK[W2ID[S.mod]]) { const cap = S.mod === 'road' ? [2.6, 2.2] : [1.5, .95]; today.s = Math.min(today.s, cap[0]); week.s = Math.min(week.s, cap[1]); [today, week].forEach((c, i) => Object.assign(c, center({ s: c.s, F: i ? Pa.at(tm) : Pa.at(t0), A: { x: VW / 2, y: i ? 430 : 300 } }))); }
   return [today, week, whole];
 }
 // the painting has edges: never show past the sides; the sky may run above the top, and the bottom may run under the session bar
 function keepIn(c) {
   const w = WORLDS[S.mod], s = Math.max(c.s, VW / w.W), vx = VW / s;
   const x = vx >= w.W ? w.W / 2 : clamp(c.F.x, vx / 2, w.W - vx / 2);
-  const yMax = w.H - (VH / 2 - 150) / s, yMin = VH / 2 / s;
+  // the art must reach down to the session card in Today, and to the slim bar further out
+  const bot = STOPS && zc(s) < .5 ? 400 : VH - 150, yMax = w.H - (bot - VH / 2) / s, yMin = VH / 2 / s;
   return { s, F: { x, y: Math.min(yMax, Math.max(yMin, c.F.y)) } };
 }
 // how far out we are: 0 = Today, 1 = This week, 2 = Journey (log-scale between the stops)
@@ -684,8 +690,12 @@ function flyTo(to, dur = 620) {
     CAM = { s: Math.exp(lerp(Math.log(a.s), Math.log(b.s), q)), F: { x: lerp(a.F.x, b.F.x, q), y: lerp(a.F.y, b.F.y, q) } }; apply(); if (k < 1) anim = requestAnimationFrame(step); };
   anim = requestAnimationFrame(step);
 }
-const goLevel = l => flyTo(STOPS[l]);
+let introT = null;
+const goLevel = l => { clearTimeout(introT); flyTo(STOPS[l]); };
+// opening shot: show the whole journey for a beat, then fly down to today, so you always know where you are on it
+function intro() { clearTimeout(introT); CAM = keepIn(STOPS[2]); apply(); introT = setTimeout(() => flyTo(STOPS[0], 1600), 1100); }
 function zoomAt(f, sx = VW / 2, sy = VH / 2, dur = 260) {
+  clearTimeout(introT);
   const s0 = CAM.s, lo = STOPS[2].s * .8, hi = STOPS[0].s * 1.4, s1 = clamp(s0 * f, lo, hi);
   const P0 = { x: CAM.F.x + (sx - VW / 2) / s0, y: CAM.F.y + (sy - VH / 2) / s0 };
   const to = { s: s1, F: { x: P0.x - (sx - VW / 2) / s1, y: P0.y - (sy - VH / 2) / s1 } };
@@ -739,6 +749,10 @@ function renderWorld() {
   vp.style.background = w.bg;
   vp.innerHTML = `<div class="world" id="world"><svg width="${w.W}" height="${w.H}" viewBox="0 0 ${w.W} ${w.H}" style="overflow:visible"><rect x="${-w.W}" y="-3000" width="${3 * w.W}" height="3002" fill="${sky(S.mod)}"/>${w.art(e)}</svg></div><div class="ov" id="ov">${ov}</div>`;
   bind(vp);
+  const Pa = P(), me = Pa.at(progress()), g = w.goal, pic = S.art === 'paint' && ART_OK[W2ID[S.mod]] ? `<image href="${ART_SRC[W2ID[S.mod]]}" width="${w.W}" height="${w.H}" preserveAspectRatio="none"/>` : '';
+  const mini = document.getElementById('mini'); mini.style.background = w.bg;
+  mini.innerHTML = `<svg viewBox="0 0 ${w.W} ${w.H}" preserveAspectRatio="xMidYMid slice">${pic}<path d="${w.d}" fill="none" stroke="#fff" stroke-opacity=".8" stroke-width="44" stroke-linecap="round"/><path d="${w.d}" fill="none" stroke="#167ADF" stroke-width="50" stroke-linecap="round" stroke-dasharray="${progress() * Pa.L} ${Pa.L * 2}"/><circle cx="${g.x}" cy="${g.y}" r="60" fill="#fff" stroke="#E4574B" stroke-width="26"/><circle cx="${me.x}" cy="${me.y}" r="80" fill="#167ADF" stroke="#fff" stroke-width="26"/><rect id="minibox" fill="rgba(255,255,255,.18)" stroke="#fff" stroke-width="40" rx="40"/></svg>`;
+  mini.onclick = () => goLevel(2);
   apply();
 }
 function pastWeek(a) { let got = 0; for (let k = 0; k < 7; k++) { const r = rec(addD(a, k)); if (r.st === 'done' || r.st === 'partial') got++; } return { got: Math.min(got, rh().n), of: rh().n }; }
@@ -756,6 +770,9 @@ function apply() {
     o.style.opacity = op; o.style.pointerEvents = op < .3 ? 'none' : 'auto';
   });
   const me = document.querySelector('#ov .me'); if (me) { const s = lerp(56, 30, clamp(z / 2, 0, 1)); me.querySelector('img').style.width = me.querySelector('img').style.height = s + 'px'; const b = me.querySelector('.boat'); if (b) b.style.width = s * 1.3 + 'px'; }
+  // the mini-map's box is what's on screen; it fades out once you're looking at the whole journey anyway
+  const mb = document.getElementById('minibox'); if (mb) { const vw = VW / CAM.s, vh = VH / CAM.s; mb.setAttribute('x', CAM.F.x - vw / 2); mb.setAttribute('y', CAM.F.y - vh / 2); mb.setAttribute('width', vw); mb.setAttribute('height', vh); }
+  const mini = document.getElementById('mini'); mini.style.opacity = clamp((1.5 - z) / .35, 0, 1); mini.style.pointerEvents = z > 1.4 ? 'none' : 'auto';
   // the session card is full in Today, a slim bar further out
   const lv = z < .5 ? 0 : z < 1.5 ? 1 : 2;
   document.getElementById('phone').dataset.lv = lv;
@@ -814,7 +831,7 @@ function renderSide() {
   document.getElementById('cases').innerHTML = CASES.map(c => `<button class="${c.k === S.c && !S.setTo ? 'on' : ''}" data-c="${c.k}" title="${c.g}">${c.ex} · ${c.said}</button>`).join('');
   document.getElementById('arts').innerHTML = [['paint', 'Painted', 'Generated illustrations (v11)'], ['vec', 'Vector', 'The v10 placeholder art']].map(([k, t, d]) => `<button class="opt ${k === S.art ? 'on' : ''}" data-art="${k}"><b>${t}</b><span>${d}</span></button>`).join('');
   document.querySelectorAll('[data-art]').forEach(b => b.onclick = () => { S.art = b.dataset.art; render(); });
-  document.querySelectorAll('[data-m]').forEach(b => b.onclick = () => { S.mod = b.dataset.m; CAM = null; render(); });
+  document.querySelectorAll('[data-m]').forEach(b => b.onclick = () => { S.mod = b.dataset.m; CAM = null; render(); intro(); });
   document.querySelectorAll('[data-r]').forEach(b => b.onclick = () => { S.rh = b.dataset.r; render(); });
   document.querySelectorAll('[data-c]').forEach(b => b.onclick = () => { S.c = b.dataset.c; S.setTo = null; const lv = +document.getElementById('phone').dataset.lv || 0; CAM = null; render(); CAM = { ...STOPS[lv] }; apply(); });
 }
@@ -831,7 +848,7 @@ let vpDrag = false;
 (() => {
   const vp = document.getElementById('vp'), pts = new Map(); let d = null, lastTap = 0, pinch = null;
   const rel = ev => { const r = vp.getBoundingClientRect(); return { x: ev.clientX - r.left, y: ev.clientY - r.top }; };
-  vp.addEventListener('pointerdown', ev => { cancelAnimationFrame(anim); pts.set(ev.pointerId, rel(ev)); vp.setPointerCapture(ev.pointerId);
+  vp.addEventListener('pointerdown', ev => { cancelAnimationFrame(anim); clearTimeout(introT); pts.set(ev.pointerId, rel(ev)); vp.setPointerCapture(ev.pointerId);
     if (pts.size === 2) { const [a, b] = [...pts.values()]; pinch = { d: Math.hypot(a.x - b.x, a.y - b.y), s: CAM.s }; d = null; }
     else { d = { ...rel(ev), F: { ...CAM.F }, moved: false }; vpDrag = false; } });
   vp.addEventListener('pointermove', ev => { if (!pts.has(ev.pointerId)) return; pts.set(ev.pointerId, rel(ev));
@@ -861,7 +878,7 @@ function openDate() {
 function closeDate() { document.getElementById('scrim').classList.remove('open'); document.getElementById('bsheet').classList.remove('open'); }
 document.getElementById('scrim').onclick = closeDate;
 function toast(t) { const el = document.getElementById('toast'); el.textContent = t; el.classList.add('show'); clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('show'), 2200); }
-render();
+render(); intro();
 
 </script>
 </body>
