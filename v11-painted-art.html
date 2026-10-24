@@ -1,0 +1,866 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Exam timeline: the path is home · v11 painted art</title>
+<style>
+@font-face{font-family:"SF Pro Rounded";src:url(assets/SFProRounded-Regular.ttf);font-weight:400}
+@font-face{font-family:"SF Pro Rounded";src:url(assets/SFProRounded-Medium.ttf);font-weight:500}
+@font-face{font-family:"SF Pro Rounded";src:url(assets/SFProRounded-SemiBold.ttf);font-weight:600}
+@font-face{font-family:"SF Pro Rounded";src:url(assets/SFProRounded-Bold.ttf);font-weight:700}
+@font-face{font-family:"SF Pro Rounded";src:url(assets/SFProRounded-Heavy.ttf);font-weight:800}
+:root{--blue-50:#EEFAFF;--blue-700:#167adf;--blue-800:#1961b4;--accent:#1565C8;--font:"SF Pro Rounded",ui-rounded,system-ui,sans-serif;--learn:#5acbff;--practice:#167adf;--revise:#ea8616}
+*{box-sizing:border-box}*::-webkit-scrollbar{display:none}*{scrollbar-width:none}
+body{margin:0;background:#efeeed;font-family:var(--font);color:#272625;-webkit-font-smoothing:antialiased}
+.page{display:flex;gap:44px;align-items:flex-start;justify-content:center;padding:28px 32px 80px}
+.side{width:390px;flex:none;display:flex;flex-direction:column;gap:12px}
+.side h1{font:700 22px/1.25 var(--font);margin:0}
+.side .sub{font:500 14px/1.5 var(--font);color:#716d69;margin:6px 0 0}
+.sec{margin-top:6px;font:700 11px/1 var(--font);letter-spacing:.06em;text-transform:uppercase;color:#716d69}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.opt{text-align:left;border:1px solid transparent;background:rgba(255,255,255,.45);border-radius:14px;padding:10px 12px;cursor:pointer;font-family:var(--font)}
+.opt:hover{background:rgba(255,255,255,.8)}
+.opt.on{background:#fff;border-color:var(--blue-700);box-shadow:0 2px 8px rgba(22,122,223,.12)}
+.opt b{display:block;font:700 14px/1.3 var(--font)}
+.opt span{display:block;margin-top:2px;font:500 12px/1.35 var(--font);color:#716d69}
+.opt i{font-style:normal;font:700 11px/1 var(--font);color:var(--blue-800);background:var(--blue-50);padding:3px 6px;border-radius:5px;margin-right:5px}
+.seg{display:flex;gap:4px;padding:4px;border-radius:12px;background:#e7e6e6}
+.seg button{flex:1;border:0;height:32px;border-radius:9px;background:transparent;font:600 13px/1 var(--font);color:#716d69;cursor:pointer}
+.seg button.on{background:#fff;color:#272625;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.card{background:#fff;border-radius:16px;padding:14px 16px;box-shadow:0 1px 3px rgba(0,0,0,.06);font:500 13px/1.55 var(--font);color:#52504c}
+.card b{color:#272625}.card ul{margin:6px 0 0;padding-left:18px}.card a{color:var(--blue-700);text-decoration:none;font-weight:600}
+.pc{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}.pc div{font:500 12.5px/1.45 var(--font)}.pc em{font-style:normal;font-weight:700;display:block;margin-bottom:2px}
+kbd{font:600 11px/1 var(--font);background:#fff;border:1px solid #ddd;border-bottom-width:2px;border-radius:5px;padding:2px 5px}
+.tag{display:inline-block;font:700 10px/1 var(--font);letter-spacing:.04em;padding:3px 6px;border-radius:5px;vertical-align:1px}.tag.new{background:#FFF1E0;color:#B45F06}
+
+.phone{width:390px;height:844px;border-radius:48px;overflow:hidden;position:relative;background:#F4F6F9;box-shadow:0 40px 80px rgba(0,0,0,.18),0 0 0 1px rgba(0,0,0,.12);flex:none}
+.island{position:absolute;top:11px;left:50%;transform:translateX(-50%);width:126px;height:37px;border-radius:24px;background:#000;z-index:200}
+.status{position:absolute;top:0;left:0;right:0;height:54px;display:flex;align-items:center;justify-content:space-between;padding:6px 34px 0 46px;font:600 17px/1 -apple-system,system-ui,sans-serif;z-index:190;pointer-events:none}
+.tap{cursor:pointer}.press{transition:transform 120ms cubic-bezier(.23,1,.32,1)}.press:active{transform:scale(.97)}
+
+/* ---- Home (new navigation, app-prototype Home v52) ---- */
+.home{position:absolute;inset:0;background:radial-gradient(120% 55% at 18% -8%,rgba(184,220,251,.95) 0%,rgba(184,220,251,0) 70%),linear-gradient(180deg,#CFE4FA 0%,#E5F0FC 24%,#F2F5FA 44%,#F7F8FA 55%)}
+.hv-glass{border:1px solid rgba(0,0,0,.07);background:radial-gradient(120% 140% at 50% 30%,rgba(255,255,255,.92),rgba(250,250,252,.85) 55%,rgba(238,238,242,.8));box-shadow:inset 0 0 0 1px rgba(255,255,255,.9),0 10px 26px rgba(0,0,0,.07);backdrop-filter:blur(14px) saturate(180%)}
+.hint{position:absolute;left:50%;top:300px;transform:translateX(-50%);font:600 12px/1 var(--font);color:#fff;background:#111827;padding:8px 10px;border-radius:8px;white-space:nowrap;animation:bob 1.6s ease-in-out infinite;z-index:5}
+.hint:before{content:"";position:absolute;top:-5px;left:50%;margin-left:-5px;border:5px solid transparent;border-top:0;border-bottom-color:#111827}
+@keyframes bob{50%{transform:translate(-50%,3px)}}
+
+/* ---- Study calendar sheet (Exam calendar v10 / app-prototype) ---- */
+.sheet{position:absolute;inset:0;z-index:60;background:#F4F6F9;transform:translateY(100%);transition:transform .32s cubic-bezier(.2,.8,.2,1);display:flex;flex-direction:column}
+.sheet.open{transform:none}
+.scroller{flex:1;overflow-y:auto;padding-bottom:60px}
+.calwrap{background:#fff;border-radius:0 0 32px 32px;box-shadow:0 1px 0 rgba(15,23,42,.04),0 12px 32px rgba(15,35,70,.06);padding:58px 18px 10px;position:sticky;top:0;z-index:5}
+.calhead{display:flex;align-items:center;justify-content:space-between;height:44px}
+.round{width:38px;height:38px;border-radius:999px;display:flex;align-items:center;justify-content:center;background:#F2F4F7;flex:none}
+.upd{height:40px;border-radius:999px;padding:0 14px;display:flex;align-items:center;gap:7px;background:#EEF5FE;color:#1565C8;font:600 14px/1 var(--font)}
+.month{margin-top:14px;display:flex;align-items:center;gap:2px;padding:0 6px}
+.month b{font:700 26px/1.1 var(--font);letter-spacing:-.4px;color:#111827}
+.month b em{font-style:normal;font-weight:500;color:#9AA3AF;margin-left:6px}
+.month .fold{display:flex;padding:6px}
+.month .arrows{margin-left:auto;display:flex;gap:8px}
+.month .arrows .round{width:34px;height:34px;background:#F4F6F9}
+.wd,.grid{display:grid;grid-template-columns:repeat(7,1fr)}
+.wd{margin-top:14px;padding-bottom:6px}
+.wd span{text-align:center;font:600 11px/1 var(--font);letter-spacing:.06em;text-transform:uppercase;color:#9AA3AF}
+.wd span.t{color:#1565C8;font-weight:800}
+.grid{row-gap:2px;padding:4px 0 2px}
+.d{position:relative;height:50px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.d .sq{position:relative;width:38px;height:38px;border-radius:999px;display:flex;align-items:center;justify-content:center;font:600 14px/1 var(--font);font-variant-numeric:tabular-nums;color:#1F2937}
+.d .sq svg{position:absolute;inset:0;transform:rotate(-90deg)}
+.d .sq .n{position:relative}
+.d.fut .sq{color:#9CA3AF}
+.d.today .sq{background:#E3EEFC;color:#1565C8;font-weight:800}
+.d.sel .sq{box-shadow:0 0 0 2px #fff,0 0 0 4px #1565C8}
+.d.out .sq{color:#C4CAD3;font-weight:500}
+.d .flag{position:absolute;top:-2px;right:2px;width:18px;height:18px;border-radius:999px;background:#1565C8;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 2px #fff}
+.cg{margin:8px 0 4px;font:700 11px/1 var(--font);letter-spacing:.04em;text-transform:uppercase;color:#9a958f}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:5px 10px;margin-top:8px;font:500 12.5px/1.4 var(--font)}.kv em{font-style:normal;color:#9a958f}
+.d.win::before{content:'';position:absolute;inset:6px 0;background:#E3EFFC}.d.win.w0::before{left:4px;border-radius:999px 0 0 999px}.d.win.w1::before{right:4px;border-radius:0 999px 999px 0}.d.win.w0.w1::before{border-radius:999px}
+.flag.dl{background:#fff!important;box-shadow:inset 0 0 0 1.5px #167ADF}
+.legend .sw{width:14px;height:10px;border-radius:5px;background:#E3EFFC;display:inline-block}
+.legend{padding:8px 6px 0;display:flex;align-items:center;gap:6px;font:500 12px/14px var(--font);color:#6B7280}
+.grabber{display:flex;justify-content:center;padding-top:10px}.grabber span{width:36px;height:4px;border-radius:999px;background:#E3E7ED}
+
+/* ---- the journey card (new): a camera on one world ---- */
+.mod{margin:16px 14px 0;border-radius:24px;overflow:hidden;contain:paint;isolation:isolate;position:relative;box-shadow:0 1px 2px rgba(15,23,42,.05),0 6px 20px rgba(15,35,70,.08);cursor:zoom-out;touch-action:pan-y}
+.world{position:absolute;left:0;top:0;transform-origin:0 0}
+.world svg{display:block}
+.mod .ov{position:absolute;inset:0;pointer-events:none}
+.mod .ov > *{position:absolute}
+.stone{width:26px;height:26px;margin:-13px 0 0 -13px;border-radius:99px;display:flex;align-items:center;justify-content:center;font:700 11px/1 var(--font);box-shadow:0 2px 4px rgba(21,51,86,.2);cursor:pointer}
+.me{display:flex;flex-direction:column;align-items:center;transform:translate(-50%,-88%);pointer-events:none}
+.me img{object-fit:contain;filter:drop-shadow(0 4px 6px rgba(21,51,86,.3));position:relative;z-index:1}
+.me .boat{margin-top:-28%;height:auto;position:relative;z-index:2}
+.mo{font:700 11px/1 var(--font);color:#153356;background:rgba(255,255,255,.9);padding:4px 7px;border-radius:999px;white-space:nowrap;box-shadow:0 1px 3px rgba(21,51,86,.12)}
+.mo.st{background:#153356;color:#fff}
+.gflag{transform:translate(-3px,-100%);filter:drop-shadow(0 2px 3px rgba(0,0,0,.2))}
+.goal{transform:translate(-50%,-100%);font:700 13px/1.15 var(--font);white-space:nowrap;padding:7px 11px;border-radius:12px;background:#fff;color:#153356;box-shadow:0 3px 10px rgba(10,30,60,.18);text-align:center}
+.goal small{display:block;font:500 11px/1 var(--font);color:#716d69;margin-top:3px}
+.hl{position:absolute;left:12px;top:12px;pointer-events:none;z-index:2}
+.hl .pl{display:inline-flex;align-items:baseline;gap:6px;padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.82);backdrop-filter:blur(12px);box-shadow:0 1px 3px rgba(0,0,0,.08);color:#153356}
+.hl .pl b{font:700 14px/1 var(--font)}.hl .pl span{font:500 13px/1 var(--font);color:#52504C}
+.hl.bot{top:auto;bottom:12px}.mod.lay-bleed .hl.bot{top:auto;bottom:44px}
+.hl .big{padding:10px 14px 11px;border-radius:18px;color:#153356;background:rgba(255,255,255,.82);backdrop-filter:blur(14px);box-shadow:0 2px 10px rgba(10,30,60,.15)}
+.hl .big .n{font:800 28px/1 var(--font);letter-spacing:-.6px}
+.hl .big .u{font:600 13.5px/1.2 var(--font);margin-top:3px;color:#52504C}
+.zc{position:absolute;right:12px;bottom:12px;display:flex;border-radius:999px;background:rgba(255,255,255,.85);backdrop-filter:blur(12px);box-shadow:0 1px 4px rgba(0,0,0,.1);z-index:2;overflow:hidden}
+.zc button{width:36px;height:34px;border:0;background:transparent;font:500 20px/1 var(--font);color:#153356;cursor:pointer}
+.zc button+button{border-left:1px solid rgba(0,0,0,.08)}
+.zc button:disabled{color:#C4CAD3;cursor:default}
+
+.vp{position:relative;overflow:hidden}
+.vp:after{content:"";position:absolute;inset:0;background-image:var(--grain);background-size:180px;opacity:.22;mix-blend-mode:soft-light;pointer-events:none;z-index:1}
+.vp .ov,.vp .hl,.vp .zc,.vp .segf,.vp .xcta{z-index:2}
+.foot{display:flex;align-items:center;gap:10px;padding:12px 12px 12px 16px;background:#fff}
+.foot .ft{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.foot .ft b{font:700 16px/1.1 var(--font);color:#111827}.foot .ft span{font:500 13px/1.2 var(--font);color:#6B7280}
+.seg3{display:flex;gap:2px;padding:3px;border-radius:999px;background:#F1F3F6;flex:none}
+.seg3 button{border:0;background:transparent;height:30px;padding:0 11px;border-radius:999px;font:600 12.5px/1 var(--font);color:#6B7280;cursor:pointer}
+.seg3 button.on{background:#fff;color:#153356;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.segf{position:absolute;right:12px;bottom:42px;z-index:3}
+.segf .seg3{background:rgba(255,255,255,.72);backdrop-filter:blur(14px);box-shadow:0 2px 10px rgba(10,30,60,.15)}
+.segf .seg3 button.on{background:#153356;color:#fff}
+.xcta{position:absolute;left:12px;bottom:12px;z-index:3;display:flex;align-items:center;gap:6px;height:34px;padding:0 14px;border:0;border-radius:999px;background:rgba(255,255,255,.88);backdrop-filter:blur(12px);box-shadow:0 2px 8px rgba(10,30,60,.15);font:700 13px/1 var(--font);color:#153356;cursor:pointer}
+.mod.lay-caption{background:#fff}
+.mod.lay-bleed{margin:-30px 0 0;border-radius:0;box-shadow:none}
+.mod.lay-bleed .hl{top:42px;left:14px}
+#sheet[data-lay=bleed] .daylist{position:relative;z-index:2;margin-top:-30px;padding-top:24px;background:#F4F6F9;border-radius:28px 28px 0 0;box-shadow:0 -6px 18px rgba(15,35,70,.08)}
+#sheet[data-lay=bleed] .daylist:before{content:"";position:absolute;top:8px;left:50%;margin-left:-18px;width:36px;height:4px;border-radius:2px;background:#D9DEE5}
+.mod.lay-strip .hl .pl{padding:7px 11px}
+#scroller.lock{overflow:hidden}
+.fz,.back{display:none}
+.mod.exp .fz{display:flex;flex-direction:column;position:absolute;right:12px;bottom:12px;z-index:3;border-radius:14px;overflow:hidden;background:rgba(255,255,255,.88);backdrop-filter:blur(12px);box-shadow:0 2px 10px rgba(10,30,60,.18)}
+.fz button{width:40px;height:40px;border:0;background:transparent;font:500 22px/1 var(--font);color:#153356;cursor:pointer}.fz button+button{border-top:1px solid rgba(0,0,0,.08)}.fz button:disabled{color:#C4CAD3;cursor:default}
+.mod.exp .back{display:flex;align-items:center;gap:6px;position:absolute;left:12px;top:12px;z-index:3;height:36px;padding:0 14px 0 11px;border:0;border-radius:999px;background:#167ADF;color:#fff;font:700 13px/1 var(--font);cursor:pointer;box-shadow:inset 0 2px 4px rgba(255,255,255,.4),0 3px 0 #1961b4}
+.mod.exp .zc,.mod.exp .segf,.mod.exp .xcta{display:none}
+.mod.exp .vp{cursor:grab;touch-action:none}.mod.exp .vp:active{cursor:grabbing}
+.mod.lay-caption.exp .back{display:none}
+.daylist.hid{opacity:0;pointer-events:none}
+/* ---- live day plan (WeekDayDetail etc.) ---- */
+.daylist{padding:22px 14px 0}
+.dayh{display:flex;align-items:center;gap:8px;padding:0 4px 12px}
+.dayh b{font:700 20px/1.2 var(--font);color:#111827;letter-spacing:-.2px}
+.chip{font:600 12px/1 var(--font);color:#1565C8;background:#E8F1FC;padding:5px 9px;border-radius:999px}
+.pcard{background:#fff;border-radius:21px;padding:14px;box-shadow:0 1px 2px rgba(15,23,42,.04)}
+.wlabel{display:flex;align-items:center;font:600 15.75px/1.2 var(--font);color:#3E3D3B;letter-spacing:.18px;margin:0 0 10.5px}
+.wlabel .edit{margin-left:auto;border-radius:999px;background:#167ADF;padding:7px 14px;font:600 12.25px/1 var(--font);color:#fff}
+.subj{margin-bottom:10.5px;display:flex;overflow:hidden;border-radius:20px;border:1px solid;background:#fff;align-items:center}
+.subj .tile{width:60px;height:49px;display:flex;align-items:center;justify-content:center;font-size:26px;flex:none}
+.subj b{flex:1;padding:0 14px;font:600 15.75px/1.2 var(--font);color:#3E3D3B}
+.arow{margin-bottom:10.5px;display:flex;align-items:center;gap:7px;border-radius:20px;border:1px solid;padding:14px}
+.arow .ic{width:32px;height:32px;flex:none}.arow .ic img{width:32px;height:32px;object-fit:contain}
+.arow .tx{flex:1;min-width:0}
+.arow .t{font:500 15.75px/1.25 var(--font);color:#3E3D3B;letter-spacing:.18px}
+.arow .s{margin-top:3.5px;font:400 15px/1.2 var(--font);color:#52504C;letter-spacing:.16px}
+.arow .m{display:flex;align-items:center;gap:10px;font:400 14px/1 var(--font);color:#52504C}
+.ck{width:17.5px;height:17.5px;border-radius:99px;background:#58BD7D;display:flex;align-items:center;justify-content:center;flex:none}
+.todo{width:17.5px;height:17.5px;border-radius:99px;border:2px solid #B3B0AD;flex:none}
+.prog{font:500 12.25px/1.3 var(--font);color:#686664}
+.eyebrow{font:700 12.25px/1 var(--font);text-transform:uppercase;letter-spacing:.025em;color:#6B7280}
+.note{font:500 15px/1.4 var(--font);color:#686664}
+.cta{display:block;width:100%;border:0;background:#167adf;border-radius:12.982px;padding:14px 28px;box-shadow:inset 0 2.164px 4.327px rgba(255,255,255,.5);font:700 14px/14px var(--font);letter-spacing:.17px;text-transform:uppercase;color:#fff;text-align:center;cursor:pointer}
+.inset{border-radius:20px;border:1px solid #E4F2FF;background:#fff;box-shadow:0 0 10px 0 #D1E5F9 inset}
+
+/* bottom sheet (BottomSheetModal.web) */
+.scrim{position:absolute;inset:0;background:rgba(0,0,0,.5);z-index:150;display:none}.scrim.open{display:block}
+.bsheet{position:absolute;left:0;right:0;bottom:0;z-index:151;background:#fff;border-radius:20px 20px 0 0;padding:24px 18px 30px;transform:translateY(105%);transition:transform .3s cubic-bezier(.2,.8,.2,1)}
+.bsheet.open{transform:none}
+.bsheet .handle{position:absolute;top:5px;left:50%;transform:translateX(-50%);width:48px;height:4px;border-radius:2px;background:#D9D9D9}
+.bsheet h3{margin:0 0 4px;font:700 17.5px/1.3 var(--font)}.bsheet p{margin:0 0 14px;font:400 15px/1.4 var(--font);color:#52504C}
+.optrow{display:flex;justify-content:space-between;align-items:center;padding:14px;border-radius:14px;border:1px solid #D9D9D9;margin-bottom:8px;font:600 15px/1 var(--font);color:#272625;cursor:pointer;box-shadow:0 2px 0 #D9D9D9}
+.optrow span{font:400 13px/1 var(--font);color:#716d69}
+.optrow.on{background:#DAF3FF;border-color:#1E92F2;box-shadow:0 2px 0 #1E92F2}
+.toast{position:absolute;left:28px;right:28px;bottom:40px;z-index:160;padding:12px 16px;border-radius:14px;background:#111827;color:#fff;font:600 14px/1.35 var(--font);text-align:center;opacity:0;transition:opacity .2s;pointer-events:none}.toast.show{opacity:1}
+
+/* ---------- v10: the path is home ---------- */
+.phone{background:#CFE4F7}
+#vp{position:absolute;inset:0;overflow:hidden;touch-action:none;cursor:grab}#vp:active{cursor:grabbing}
+#vp .ov{position:absolute;inset:0;pointer-events:none;z-index:2}#vp .ov>*{position:absolute}
+.top{position:absolute;left:0;right:0;top:0;z-index:20;padding:58px 14px 0;pointer-events:none;background:linear-gradient(180deg,rgba(207,228,247,.85),rgba(207,228,247,0))}
+.top>*{pointer-events:auto}
+.trow{display:flex;align-items:center;gap:8px}
+.pill2{margin:0 auto;height:38px;border-radius:999px;padding:0 10px 0 13px;white-space:nowrap;display:flex;align-items:center;gap:6px;font:700 14px/1 var(--font);color:#153356;cursor:pointer}
+.srow{display:flex;align-items:center;gap:8px;margin-top:12px}
+#seg{flex:1;display:flex;padding:4px;border-radius:999px}
+#seg button{flex:1;height:32px;border:0;border-radius:999px;background:transparent;font:700 13px/1 var(--font);color:#52504C;cursor:pointer;transition:background .2s,color .2s}
+#seg button.on{background:#167ADF;color:#fff;box-shadow:inset 0 2px 4px rgba(255,255,255,.4)}
+.rb{width:42px;height:42px;border-radius:999px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none}
+#hl{position:absolute;left:14px;top:178px;z-index:15;pointer-events:none}#hl *{pointer-events:auto}
+.phone[data-lv="2"] #hl{top:auto;bottom:188px}
+#hl .pl{display:inline-flex;align-items:center;gap:7px;padding:9px 13px;border-radius:999px;background:rgba(255,255,255,.88);backdrop-filter:blur(12px);box-shadow:0 2px 8px rgba(10,30,60,.12);color:#153356}
+#hl .pl b{font:700 14px/1 var(--font)}#hl .pl span{font:500 13px/1 var(--font);color:#52504C}
+#hl .big{padding:11px 15px 12px;border-radius:18px;color:#153356;background:rgba(255,255,255,.88);backdrop-filter:blur(14px);box-shadow:0 2px 10px rgba(10,30,60,.15)}
+#hl .big .n{font:800 30px/1 var(--font);letter-spacing:-.6px}#hl .big .u{font:600 13.5px/1.2 var(--font);margin-top:3px;color:#52504C}
+.dots{display:inline-flex;gap:4px;vertical-align:middle;margin-left:4px}.dots i{width:8px;height:8px;border-radius:99px;background:#D5DAE1}.dots i.on{background:#58BD7D}
+.fz2{position:absolute;right:14px;bottom:188px;z-index:15;display:flex;flex-direction:column;border-radius:14px;overflow:hidden;background:rgba(255,255,255,.9);backdrop-filter:blur(12px);box-shadow:0 2px 10px rgba(10,30,60,.18);transition:opacity .25s}
+.fz2 button{width:40px;height:40px;border:0;background:transparent;font:500 22px/1 var(--font);color:#153356;cursor:pointer}.fz2 button+button{border-top:1px solid rgba(0,0,0,.08)}
+.phone[data-lv="0"] .fz2{opacity:0;pointer-events:none}
+/* the session card: full in Today, a slim bar when you zoom out */
+#card{position:absolute;left:10px;right:10px;bottom:98px;z-index:18;background:#fff;border-radius:26px;padding:10px 14px 14px;box-shadow:0 -2px 30px rgba(10,30,60,.18);transition:transform .38s cubic-bezier(.2,.8,.2,1),opacity .25s}
+.phone:not([data-lv="0"]) #card{transform:translateY(120%);opacity:0;pointer-events:none}
+#card .grab{cursor:pointer;width:40px;height:5px;border-radius:3px;background:#D9D9D9;margin:0 auto 10px}
+#grabz{position:absolute;left:50%;transform:translateX(-50%);bottom:auto;width:120px;height:22px;z-index:19;cursor:pointer}
+#card .eyebrow{display:flex;align-items:center;gap:4px}
+.sh{display:flex;align-items:center;gap:10px;margin:10px 0 12px}.sh>div:first-child{flex:1;min-width:0}
+.sh b{display:block;font:700 20px/1.15 var(--font);color:#272625}.sh span{display:block;margin-top:3px;font:500 13.5px/1.3 var(--font);color:#686664}
+.subj.sm{margin:0;border-radius:14px;flex:none}.subj.sm .tile{width:38px;height:36px;font-size:19px}.subj.sm b{padding:0 11px 0 9px;font-size:14px;margin:0}
+#card .arow{padding:10px 12px;margin-bottom:8px;border-radius:16px}#card .arow .t{font-size:15px}#card .arow .s{font-size:13.5px;margin-top:2px}
+#card .cta{margin-top:4px}
+#bar{position:absolute;left:12px;right:12px;bottom:98px;z-index:17;height:62px;border-radius:20px;display:flex;align-items:center;padding:0 10px 0 16px;background:rgba(255,255,255,.94);backdrop-filter:blur(14px);box-shadow:0 4px 20px rgba(10,30,60,.18);cursor:pointer;transition:transform .38s cubic-bezier(.2,.8,.2,1),opacity .25s}
+.phone[data-lv="0"] #bar{transform:translateY(30px);opacity:0;pointer-events:none}
+#bar .bt{flex:1}#bar b{display:block;font:700 15px/1.2 var(--font);color:#272625}#bar span{display:block;font:500 13px/1.2 var(--font);color:#686664;margin-top:2px}
+#bar .bgo{flex:none;margin:0;height:40px;padding:0 18px;border-radius:12px;background:#167adf;color:#fff;display:flex;align-items:center;font:700 13px/1 var(--font);text-transform:uppercase;box-shadow:inset 0 2px 4px rgba(255,255,255,.5)}
+#bar .bgo.ghost{background:#EEF5FD;color:#167adf;box-shadow:none}
+.nav{position:absolute;left:16px;right:16px;bottom:26px;height:64px;border-radius:999px;display:flex;align-items:center;padding:0 6px;font:600 11px/1 var(--font);color:#52504c;z-index:21}
+.nav div{flex:1;text-align:center}.nav .on{height:52px;border-radius:999px;background:rgba(22,122,223,.1);color:#167adf;display:flex;align-items:center;justify-content:center}
+/* on the path */
+.ses{width:30px;height:30px;margin:-15px 0 0 -15px;border-radius:99px;display:flex;align-items:center;justify-content:center;font:800 13px/1 var(--font);box-shadow:0 2px 5px rgba(21,51,86,.25);cursor:pointer}
+.ses.done{background:#58BD7D;border:2.5px solid #fff}
+.ses.next{background:#167ADF;color:#fff;border:2.5px solid #fff}
+.ses.next i{position:absolute;inset:-7px;border-radius:99px;border:2px solid #167ADF;animation:pulse 1.6s ease-out infinite}
+@keyframes pulse{from{transform:scale(.8);opacity:1}to{transform:scale(1.35);opacity:0}}
+.ses.later{background:#fff;color:#1961b4;border:2px dashed #8DB6EA}
+.wkend{font:700 11px/1 var(--font);color:#fff;background:rgba(21,51,86,.72);padding:4px 8px;border-radius:999px;white-space:nowrap}
+.pw{display:flex;align-items:center;gap:5px;font:700 11px/1 var(--font);color:#153356;background:rgba(255,255,255,.92);padding:4px 8px;border-radius:999px;white-space:nowrap;box-shadow:0 1px 3px rgba(21,51,86,.15);cursor:pointer}
+.pw b{color:#716d69;font-weight:600}.pw svg{width:10px;height:10px}
+#vp .me{transform:translate(-50%,-88%)}
+/* history sheet */
+#hist{position:absolute;inset:0;z-index:60;background:#fff;padding:58px 16px 30px;overflow:auto;transform:translateY(102%);transition:transform .36s cubic-bezier(.2,.8,.2,1)}#hist.open{transform:none}
+.wrow{display:flex;align-items:center;gap:10px;padding:12px 4px;border-top:1px solid #F0F0F0}.wrow>div{flex:1}.wrow b{display:block;font:600 15px/1.2 var(--font)}.wrow span{font:500 12.5px/1.3 var(--font);color:#8C8884}.wrow em{font-style:normal;font:700 13px/1 var(--font);color:#52504C;width:30px;text-align:right}
+#cases{display:flex;flex-wrap:wrap;gap:6px}#cases button{border:1px solid transparent;background:rgba(255,255,255,.5);border-radius:999px;padding:7px 11px;font:600 12px/1 var(--font);color:#52504c;cursor:pointer}#cases button.on{background:#fff;border-color:var(--blue-700);color:#153356}
+.toast{z-index:300}
+
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="side">
+    <div>
+      <h1>The path is home</h1>
+      <p class="sub">From the Oct 23 sync. Opening the app shows <b>your path</b>, zoomed in on <b>this week</b>: Rezzy, your sessions as stones, and the next session's 3 activities. Pinch, scroll or use <b>Today · Week · Journey</b> to pull back to the whole way to the exam. The plan is <b>weekly, at your own pace</b>: sessions aren't tied to days, so nothing is "missed". The <b>calendar only looks back</b> (top-right button, or tap a done stone).</p>
+    </div>
+    <div class="sec">Metaphor</div>
+    <div class="opts" id="opts"></div>
+    <div class="sec">Art</div>
+    <div class="opts" id="arts"></div>
+    <div class="sec">How this student studies</div>
+    <div class="opts" id="rhs"></div>
+    <div class="sec">Exam date we have</div>
+    <div id="cases"></div>
+    <div class="card"><b>What changed from v9</b><ul>
+      <li><b>Path first.</b> v9 hid the path inside the calendar sheet, behind a pill. Now it's the home screen, and you zoom <i>into</i> what to do.</li>
+      <li><b>Sessions, not days.</b> This week's target (e.g. 3 sessions) sits on the path. Done ones stay where you did them; the rest wait ahead of Rezzy, any day this week. Daily students see "Today's session".</li>
+      <li><b>Calendar = the past.</b> Rings for what you studied, a row per week. No future days with plans in them.</li>
+      <li><b>Same three distances:</b> Today (Rezzy + next session) → Week (sessions, past weeks summed up) → Journey (months, the exam, one number).</li></ul></div>
+    <div class="card"><b>Rules</b><ul><li>One number per level: "Session 2 · 37 min", "1 of 3 sessions", "136 days to the summit".</li><li>No Learn/Practise/Revise labels. Session names come from order in the week (start, practise, wrap up).</li><li>Unsure exam date: fog on the goal, as in v9.</li><li>Art is a placeholder for the illustrator.</li></ul></div>
+  </div>
+
+  <div class="phone" id="phone" data-lv="0">
+    <div class="island"></div>
+    <div class="status"><span>9:41</span><span>▮▮▮ ▬</span></div>
+    <div id="vp"></div>
+    <div class="top">
+      <div class="trow">
+        <div style="height:38px;border-radius:999px;padding:0 12px;display:flex;align-items:center;white-space:nowrap;background:linear-gradient(180deg,#8C65C9,#573192);color:#fff;font:800 12px/1 var(--font)">MAX</div>
+        <div class="hv-glass pill2 press" id="pill"></div>
+        <div class="hv-glass" style="height:38px;border-radius:999px;display:flex;align-items:center;gap:8px;padding:0 5px 0 12px;font:700 14px/1 var(--font);color:#ea8616">🔥 12<span style="width:28px;height:28px;border-radius:99px;background:#DCEBFB;color:#167ADF;display:flex;align-items:center;justify-content:center;font-size:12px">K</span></div>
+      </div>
+      <div class="srow">
+        <div class="hv-glass" id="seg"><button data-lv="0">Today</button><button data-lv="1">Week</button><button data-lv="2">Journey</button></div>
+        <div class="hv-glass rb press" id="histb" title="Your study so far"></div>
+      </div>
+    </div>
+    <div id="hl"></div>
+    <div class="fz2"><button id="zin">+</button><button id="zout">−</button></div>
+    <div id="bar"></div>
+    <div id="card"></div>
+    <div class="hv-glass nav"><div class="on">Home</div><div>Subjects</div><div>Practice</div><div>Readiness</div></div>
+    <div id="hist"></div>
+    <div class="scrim" id="scrim"></div>
+    <div class="bsheet" id="bsheet"></div>
+    <div class="toast" id="toast"></div>
+  </div>
+</div>
+<script>
+const MON = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const MS = MON.map(m => m.slice(0, 3)), WD = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'], DAYN = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const TODAY = new Date(2026, 9, 22), START = new Date(2026, 8, 14), DAY = 86400000;
+const addD = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
+const addM = (d, n) => { const x = new Date(d); x.setMonth(x.getMonth() + n); return x; };
+const same = (a, b) => a && b && a.toDateString() === b.toDateString();
+const diff = (a, b) => Math.round((b - a) / DAY);
+const wkStart = d => addD(d, -((d.getDay() + 6) % 7));
+const fmt = d => `${MS[d.getMonth()]} ${d.getDate()}`;
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const lerp = (a, b, t) => a + (b - a) * t;
+const smooth = t => t * t * (3 - 2 * t);
+// ---------- exam + plan model (same as v1) ----------
+// What we collected, per course. Ranges and "less than" answers are counted from the day the student answered
+// (ASKED = plan start), so they shrink as time passes instead of sliding forward with today.
+const ASKED = START;
+const CASES = [
+  { k: 'neet', g: 'Exact date', ex: 'NEET-PG', kind: 'date', v: new Date(2027, 2, 7), said: 'Mar 7, 2027', how: 'Published date from the official notice. The student only confirms it.' },
+  { k: 'step1', g: 'Exact date', ex: 'USMLE Step 1', kind: 'date', v: new Date(2026, 11, 13), said: 'Dec 13, 2026', how: 'Their own booked test day (Prometric). Under 90 days, so the pill counts days.' },
+  { k: 'inicet', g: 'Exact month', ex: 'INI-CET', kind: 'month', v: new Date(2027, 4, 1), said: 'May 2027', how: 'The session month is announced before the exact day.' },
+  { k: 'cfa', g: 'Exact month', ex: 'CFA Level I', kind: 'month', v: new Date(2027, 7, 1), said: 'August 2027 window', how: 'CFA sits in testing windows (Feb, May, Aug, Nov). The student picks a window, not a day.' },
+  { k: 'nclex', g: 'Range', ex: 'NCLEX-RN', kind: 'range', v: [3, 6], said: '3–6 months', how: 'Graduates book after their Authorization to Test arrives, so we only ask for a range.' },
+  { k: 'mcat', g: 'Range', ex: 'MCAT', kind: 'range', v: [6, 12], said: '6–12 months', how: 'Range picked in onboarding. Test dates open later.' },
+  { k: 'neetlt', g: 'Less than', ex: 'NEET-PG', kind: 'lt', v: 3, said: 'Less than 3 months', how: 'Kabir\'s onboarding answer. Only a latest date is known.' },
+  { k: 'plab', g: 'Less than', ex: 'PLAB 1', kind: 'lt', v: 6, said: 'Less than 6 months', how: 'Onboarding answer. Only a latest date is known.' },
+  { k: 'step1gt', g: 'More than', ex: 'USMLE Step 1', kind: 'gt', v: 12, said: 'More than a year', how: 'An M1 student. Only an earliest date is known.' },
+  { k: 'none', g: 'No date', ex: 'UKMLA', kind: 'none', said: 'Not sure yet', how: 'Skipped the question, or "not sure yet".' },
+];
+const S0 = { opt: 'A', c: 'neet', setTo: null, open: false, level: 0, sel: TODAY };
+const moTo = d => Math.max(0, Math.round(diff(TODAY, d) / 30.4));
+function exam() {
+  const c = CASES.find(x => x.k === S.c), e = S.setTo ? { ...c, ...S.setTo } : c;
+  if (e.kind === 'date') return { ...e, end: e.v, win: null };
+  if (e.kind === 'month') return { ...e, end: e.v, win: [e.v, new Date(e.v.getFullYear(), e.v.getMonth() + 1, 0)] };
+  if (e.kind === 'range') { const a = addM(ASKED, e.v[0]), b = addM(ASKED, e.v[1]); return { ...e, end: a, win: [a, b] }; }
+  if (e.kind === 'lt') { const b = addM(ASKED, e.v); return { ...e, end: b, win: [TODAY, b] }; } // any day up to the deadline: aim for the latest
+  if (e.kind === 'gt') { const a = addM(ASKED, e.v); return { ...e, end: a, win: [a, null] }; } // open-ended: aim for the earliest
+  return { ...e, kind: 'none' };
+}
+// the one number, in the student's own terms
+function bigN(e) {
+  if (e.kind === 'date') return `${diff(TODAY, e.v)} days`;
+  if (e.kind === 'month') return `${moTo(e.v)} months`;
+  if (e.kind === 'range') return `${moTo(e.win[0])}–${moTo(e.win[1])} months`;
+  if (e.kind === 'lt') { const d = diff(TODAY, e.end); return d <= 60 ? `Under ${d} days` : `Under ${Math.ceil(d / 30.4)} months`; }
+  if (e.kind === 'gt') return `${moTo(e.end)}+ months`;
+  return '';
+}
+function countdown() {
+  const e = exam();
+  if (e.kind === 'none') return 'Set your exam date';
+  if (e.kind === 'month') return `${bigN(e)} to go · ${MON[e.v.getMonth()]}`;
+  if (e.kind === 'date') { const d = diff(TODAY, e.v); return d <= 90 ? `${d} days to go` : `${Math.round(d / 30.4)} months to go`; }
+  return `${bigN(e)} to go`;
+}
+const weekNo = d => Math.floor(diff(wkStart(START), wkStart(d)) / 7) + 1;
+const totalWeeks = () => { const e = exam(); return e.kind === 'none' ? null : weekNo(e.end); };
+function rec(d) {
+  if (d < START) return { st: 'before' };
+  if (d > TODAY && !same(d, TODAY)) return { st: 'future' };
+  if (same(d, TODAY)) return { st: 'today', min: 14, done: 1 };
+  const n = (d.getDate() * 7 + d.getMonth() * 3) % 13;
+  if (n === 9 || n === 4) return { st: 'none', min: 0, done: 0 };
+  if (n === 2 || n === 11) return { st: 'partial', min: 10, done: 1 };
+  return { st: 'done', min: [35, 20, 45, 25, 30, 50, 18, 40, 28][n % 9], done: 3 };
+}
+// live activity types + surfaces (weekPlanDisplay.tsx)
+const SURF = { pyqs: ['#F9F8FF', '#E9E5FF', 'assets/quiz.webp'], exercises: ['#FEF8EC', '#FBECCA', 'assets/notes.webp'], flashcards: ['#F4F9FF', '#E5F1FF', 'assets/flashcards.webp'], video: ['#FFF8F7', '#FFE9E5', 'assets/youtube-tool.webp'] };
+const SUBJ = [['Physiology', '🫀', '#FDECEC', '#F6C9C9'], ['Pharmacology', '💊', '#F0E9FB', '#DCCDF5'], ['Pathology', '🔬', '#E8F4FB', '#C4E2F4'], ['Anatomy', '🦴', '#FBF3E6', '#F0DDB8'], ['Microbiology', '🦠', '#EAF7EE', '#C8EBD3'], ['Medicine', '🩺', '#EAF0FB', '#C9D8F4']];
+const CHECK = `<svg width="11" height="11" viewBox="0 0 24 24" style="fill:none;stroke:#fff;stroke-width:3.6;stroke-linecap:round;stroke-linejoin:round"><path d="m5 12 5 5 9-10"/></svg>`;
+const CHEV = (c = '#272625', s = 16, d = 'r') => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" style="fill:none;stroke:${c};stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round"><path d="${d === 'r' ? 'm9 6 6 6-6 6' : 'm6 9 6 6 6-6'}"/></svg>`;
+const FLAG = (c = '#fff', w = 14, pole = c) => `<svg width="${w}" height="${w * 1.3}" viewBox="0 0 18 24"><line x1="2.5" y1="1" x2="2.5" y2="23" stroke="${pole}" stroke-width="2.5" stroke-linecap="round"/><path d="M3.5 2 L17 7.5 L3.5 13 Z" fill="${c}"/></svg>`;
+function rnd(i) { const x = Math.sin(i * 999.7) * 43758.5; return x - Math.floor(x); }
+const FOG = { date: 0, month: .7, lt: .8, range: .9, gt: .95, none: 1 };
+const RC = 108.38;
+const RING = f => `<svg viewBox="0 0 38 38" width="38" height="38"><circle cx="19" cy="19" r="17.25" fill="none" stroke="#E8EEF6" stroke-width="3.5"/>${f > 0 ? `<circle cx="19" cy="19" r="17.25" fill="none" stroke="#1F7AE0" stroke-width="3.5" stroke-linecap="round" stroke-dasharray="${RC}" stroke-dashoffset="${(RC * (1 - Math.min(1, f))).toFixed(2)}"/>` : ''}</svg>`;
+const PH_TXT = { learn: '#1e92f2', practice: '#167adf', revise: '#c3440b' };
+
+// paper grain for the painted worlds
+(() => { const c = document.createElement('canvas'); c.width = c.height = 180; const x = c.getContext('2d'), im = x.createImageData(180, 180); for (let i = 0; i < im.data.length; i += 4) { const v = 110 + Math.random() * 145; im.data[i] = im.data[i + 1] = im.data[i + 2] = v; im.data[i + 3] = 255; } x.putImageData(im, 0, 0); document.documentElement.style.setProperty('--grain', `url(${c.toDataURL()})`); })();
+const MODS = [
+  { k: 'mountain', whole: 'See the whole climb', name: 'Mountain', tag: 'Climb to the summit', unit: 'to the summit', goalWord: 'summit',
+    desc: 'The v2 climb, now inside the card. Zoomed in, Rezzy stands on the trail with this week\'s days as stepping stones. Pull back and the slope opens up with month markers, then the whole mountain with the flag and the exam date.',
+    pros: 'Universal: the top is where you need to go. Effort reads as climbing.', cons: 'Needs a proper illustration pass to feel premium.' },
+  { k: 'road', whole: 'See the whole road', name: 'Road ahead', tag: 'Drive to the city', get unit() { return 'to ' + exam().ex; }, goalWord: 'city',
+    desc: 'A country road winding to a city on the horizon. Close up, it\'s the stretch of road you\'re on this week. Pull back and the road narrows into the distance, with the city (the exam) where it meets the sky.',
+    pros: 'Calm. A far horizon doesn\'t feel like failing, so it suits long timelines.', cons: 'Less "achievement" than a summit.' },
+  { k: 'sea', whole: 'See the whole crossing', name: 'Island', tag: 'Sail to the island', unit: 'to the island', goalWord: 'island',
+    desc: 'You set off from the beach and sail toward an island. Close up, this week\'s days are buoys on your course. Pull back to see the whole crossing. With no fixed date, the island sits in fog, which is exactly what fog means at sea.',
+    pros: 'Fog for an unknown date is natural, not a UI trick. The light reads as "guiding you".', cons: 'Water has fewer landmarks, so the close view relies on the buoys.' },
+  { k: 'map', whole: 'See the whole map', name: 'Treasure map', tag: 'X marks the exam', unit: 'to the X', goalWord: 'X',
+    desc: 'A hand-drawn map with a dashed route from where you started to a big X. Close up, your footsteps this week. Pull back for the whole map: forest, river, bridge and the X.',
+    pros: 'Zoom feels native: it\'s a map. Playful but still clear.', cons: 'More "game" in tone. The X is a reward metaphor, the exam is a test.' },
+];
+const mod = () => MODS.find(m => m.k === S.mod);
+function progress() { return tAt(TODAY); }
+function tAt(d) { const e = exam(); if (e.kind === 'none') return clamp(diff(START, d) / 240, 0, 1); return clamp(diff(START, d) / diff(START, e.end), 0, 1); }
+
+// a reusable sampler for path-based worlds
+const SAMP = {};
+function sampler(key, d) { if (SAMP[key] && SAMP[key].d === d) return SAMP[key]; const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); s.style.cssText = 'position:absolute;width:0;height:0'; const p = document.createElementNS('http://www.w3.org/2000/svg', 'path'); p.setAttribute('d', d); s.appendChild(p); document.body.appendChild(s); const L = p.getTotalLength(); SAMP[key] = { d, L, at: t => { const q = p.getPointAtLength(clamp(t, 0, 1) * L); return { x: q.x, y: q.y }; }, nrm: t => { const a = p.getPointAtLength(clamp(t - .002, 0, 1) * L), b = p.getPointAtLength(clamp(t + .002, 0, 1) * L), l = Math.hypot(b.x - a.x, b.y - a.y) || 1; return { x: -(b.y - a.y) / l, y: (b.x - a.x) / l }; } }; return SAMP[key]; }
+function smoothPath(pts, k = .2) { let d = `M ${pts[0][0]} ${pts[0][1]}`; for (let i = 0; i < pts.length - 1; i++) { const p0 = pts[i - 1] || pts[i], p1 = pts[i], p2 = pts[i + 1], p3 = pts[i + 2] || p2; d += ` C ${p1[0] + (p2[0] - p0[0]) * k} ${p1[1] + (p2[1] - p0[1]) * k}, ${p2[0] - (p3[0] - p1[0]) * k} ${p2[1] - (p3[1] - p1[1]) * k}, ${p2[0]} ${p2[1]}`; } return d; }
+const P = () => { const w = WORLDS[S.mod]; return sampler(S.mod, w.d); };
+// distance from a point to the path (for keeping props off the road)
+function nearPath(Pa, x, y, r) { if (!Pa.pts) Pa.pts = [...Array(201)].map((_, i) => Pa.at(i / 200)); for (const q of Pa.pts) if ((q.x - x) ** 2 + (q.y - y) ** 2 < r * r) return true; return false; }
+const BIG = 5000;
+const ext = (fill, y0 = -BIG, y1 = BIG) => `<rect x="${-BIG}" y="${y0}" width="${2 * BIG}" height="${y1 - y0}" fill="${fill}"/>`;
+
+// ---- illustrated worlds (new): painted look in the Oncourse style — soft skies, layered haze, lit and shadow faces ----
+// Every world is drawn inside 0..W × 0..H; the camera never leaves it (cover-fit + clamp).
+const nss = 'vector-effect="non-scaling-stroke"';
+const RR = (a, b, i) => a + (b - a) * rnd(i);
+function fogBlob(id, x, y, r, o) { return `<defs><filter id="fb-${id}" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="${r * .18}"/></filter></defs><g filter="url(#fb-${id})" opacity="${o}"><ellipse cx="${x}" cy="${y}" rx="${r}" ry="${r * .5}" fill="#fff"/><ellipse cx="${x - r * .7}" cy="${y + r * .25}" rx="${r * .6}" ry="${r * .32}" fill="#fff"/><ellipse cx="${x + r * .7}" cy="${y + r * .2}" rx="${r * .62}" ry="${r * .34}" fill="#fff"/></g>`; }
+// shared painting kit
+const kit = id => `<filter id="${id}-b6" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="6"/></filter>
+  <filter id="${id}-b16" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="16"/></filter>
+  <filter id="${id}-b40" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="40"/></filter>
+  <radialGradient id="${id}-puff" cx=".42" cy=".3" r=".75"><stop offset="0" stop-color="#fff"/><stop offset=".55" stop-color="#fff"/><stop offset="1" stop-color="#D3E2F3"/></radialGradient>`;
+function cloud(id, x, y, s, o = 1) {
+  const puffs = [[-62, 8, 34], [-28, -14, 40], [12, -26, 48], [54, -8, 38], [84, 10, 26], [-94, 16, 22]];
+  return `<g transform="translate(${x} ${y}) scale(${s})" opacity="${o}"><ellipse cx="4" cy="26" rx="118" ry="16" fill="#9FB9D8" opacity=".35" filter="url(#${id}-b6)"/>${puffs.map(([dx, dy, r]) => `<circle cx="${dx}" cy="${dy}" r="${r}" fill="url(#${id}-puff)"/>`).join('')}<path d="M-112 18 Q 0 32 108 18 L 108 30 L -112 30 Z" fill="#DCE8F5"/></g>`;
+}
+function pine(x, y, h, lit, dark) { const w = h * .4; return `<rect x="${x - h * .03}" y="${y - h * .08}" width="${h * .06}" height="${h * .12}" fill="#5B4636"/><path d="M${x} ${y - h} L${x + w * .55} ${y - h * .5} L${x + w * .34} ${y - h * .5} L${x + w} ${y} L${x - w} ${y} L${x - w * .34} ${y - h * .5} L${x - w * .55} ${y - h * .5} Z" fill="${dark}"/><path d="M${x} ${y - h} L${x + w * .55} ${y - h * .5} L${x + w * .34} ${y - h * .5} L${x + w} ${y} L${x} ${y} Z" fill="${lit}"/>`; }
+function tree(x, y, r, lit, dark) { return `<ellipse cx="${x + r * .4}" cy="${y + r * .1}" rx="${r * 1.1}" ry="${r * .3}" fill="#24493A" opacity=".2"/><rect x="${x - r * .1}" y="${y - r * .8}" width="${r * .2}" height="${r * .85}" fill="#6E5140"/><circle cx="${x}" cy="${y - r * 1.25}" r="${r}" fill="${dark}"/><circle cx="${x + r * .28}" cy="${y - r * 1.45}" r="${r * .66}" fill="${lit}"/>`; }
+function wavePath(y, amp, per, ph, x0, x1, bottom) { let d = `M${x0} ${bottom} L${x0} ${y}`; for (let x = x0; x <= x1; x += 30) d += ` L${x} ${(y + Math.sin(x / per + ph) * amp + Math.sin(x / (per * .43) + ph * 2) * amp * .35).toFixed(1)}`; return d + ` L${x1} ${bottom} Z`; }
+function waveTop(y, amp, per, ph, x0, x1) { let d = ''; for (let x = x0; x <= x1; x += 30) d += `${d ? ' L' : 'M'}${x} ${(y + Math.sin(x / per + ph) * amp + Math.sin(x / (per * .43) + ph * 2) * amp * .35).toFixed(1)}`; return d; }
+const waveY = (x, y, amp, per, ph) => y + Math.sin(x / per + ph) * amp + Math.sin(x / (per * .43) + ph * 2) * amp * .35;
+function range(x0, x1, base, n, hmin, hmax, seed) { let d = `M${x0} ${base + 600} L${x0} ${base}`; for (let i = 0; i <= n; i++) { const x = x0 + (x1 - x0) * i / n, y = base - (i % 2 ? RR(hmin * .45, hmin * .8, seed + i) : RR(hmin, hmax, seed + i)); d += ` L${x.toFixed(0)} ${y.toFixed(0)}`; } return d + ` L${x1} ${base + 600} Z`; }
+const tuft = (x, y, s, c) => `<path d="M${x - 2 * s} ${y} q -1 ${-6 * s} ${-4 * s} ${-10 * s} M${x} ${y} q 0 ${-8 * s} ${1 * s} ${-13 * s} M${x + 2 * s} ${y} q 1 ${-6 * s} ${5 * s} ${-9 * s}" stroke="${c}" stroke-width="${1.3 * s}" fill="none" stroke-linecap="round"/>`;
+const flower = (x, y, r, c) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${c}"/><circle cx="${x}" cy="${y}" r="${r * .4}" fill="#FFE07A"/>`;
+
+function illoWorld(o) {
+  const w = {
+    bound: true, chip: o.chip, W: o.W, H: o.H, d: smoothPath(o.pts, o.tension ?? .2), goal: { x: o.goal[0], y: o.goal[1] }, flag: o.flag,
+    whole: { x0: o.whole[0], y0: o.whole[1], x1: o.whole[2], y1: o.whole[3] }, bg: o.bg, maxS: o.maxS, dayPx: o.dayPx,
+    art(e) {
+      if (this._bk !== e.ex) { this._bk = e.ex; this._base = o.paint.call(this, sampler(o.id, this.d)); } // the painting only changes with the exam name; cache it
+      const Pa = sampler(o.id, this.d), lt = progress() * Pa.L, g = this.goal;
+      const fog = e.kind === 'date' ? '' : fogBlob(o.id, g.x + o.fog[0], g.y + o.fog[1], o.fog[2], FOG[e.kind]);
+      const base = S.art === 'paint' && ART_OK[o.id] ? `<image href="${ART_SRC[o.id]}" x="0" y="0" width="${o.W}" height="${o.H}" preserveAspectRatio="none"/>${this._over || ''}` : this._base;
+      return `${base}${o.trail(this.d, lt, Pa.L, e)}${fog}`;
+    },
+  };
+  return w;
+}
+
+const WORLDS = {
+  // ---- mountain: meadow → forest → rock → snow, a dirt trail switching back to the summit ----
+  mountain: illoWorld({
+    id: 'mt', W: 1200, H: 1500, flag: true, maxS: 3, dayPx: 50, bg: '#CFE4F7',
+    pts: [[560, 1520], [600, 1450], [830, 1395], [420, 1335], [810, 1275], [450, 1210], [770, 1152], [520, 1094], [700, 1042], [596, 990], [668, 930], [560, 878], [706, 818], [580, 758], [702, 700], [598, 640], [690, 580], [612, 520], [672, 460], [616, 400], [652, 340], [614, 282], [604, 212]],
+    goal: [604, 196], whole: [0, 40, 1200, 1500], fog: [0, 70, 190],
+    paint(Pa) {
+      const id = 'mt', PK = { x: 604, y: 190 };
+      let farP = '', nearP = '', meadowTrees = '', flowers = '', tufts = '', rocks = '';
+      for (let i = 0; i < 70; i++) { const x = -20 + i * 18 + RR(-6, 6, i), y = waveY(x, 842, 22, 160, 1) + 6; farP += pine(x, y, RR(26, 40, i + 3), '#8FB3C2', '#6E95A8'); }
+      for (let r = 0; r < 3; r++) for (let i = 0; i < 64; i++) { const x = -30 + i * 20 + RR(-8, 8, i + r * 90), y = waveY(x, 905, 28, 200, 2.2) + 10 + r * 26 + RR(-6, 6, i + 7 * r), h = RR(34, 54, i + r * 40) + r * 8; if (nearPath(Pa, x, y - h * .4, 24)) continue; nearP += pine(x, y, h, ['#6FAE93', '#5E9F86', '#4F9078'][r], ['#3F7A68', '#346D5C', '#2B5F50'][r]); }
+      [[110, 1120, 28], [190, 1150, 22], [980, 1110, 30], [1060, 1150, 24], [140, 1330, 34], [1080, 1340, 36], [940, 1300, 26], [60, 1250, 28]].forEach(([x, y, r]) => meadowTrees += tree(x, y, r, '#8BC77C', '#5FA46A'));
+      for (let i = 0; i < 520; i++) { const x = RR(0, 1200, i * 3 + 1), y = RR(990, 1500, i * 5 + 2); if (nearPath(Pa, x, y, 16)) continue; flowers += flower(x, y, RR(2.5, 4.5, i), ['#FFFFFF', '#FFD86B', '#F7A8C4', '#C2B2F5', '#FFFFFF'][i % 5]); }
+      for (let i = 0; i < 420; i++) { const x = RR(0, 1200, i * 7 + 4), y = RR(980, 1500, i * 11 + 5); if (nearPath(Pa, x, y, 14)) continue; tufts += tuft(x, y, RR(.8, 1.5, i), ['#5E9E5A', '#6DAE63', '#4E8E4F'][i % 3]); }
+      // close-up detail right beside the trail
+      for (let i = 0; i < 360; i++) { const t = i / 360, q = Pa.at(t), n = Pa.nrm(t), sd = i % 2 ? 1 : -1, off = RR(12, 30, i + 50), x = q.x + n.x * off * sd, y = q.y + n.y * off * sd;
+        rocks += y < 820 ? `<ellipse cx="${x}" cy="${y}" rx="${RR(3, 7, i)}" ry="${RR(2, 4, i + 1)}" fill="#8EA3BF"/><ellipse cx="${x - 1}" cy="${y - 1.2}" rx="${RR(2, 4, i)}" ry="${RR(1, 2.2, i + 1)}" fill="#C9D6E7"/>` : i % 3 ? tuft(x, y, RR(.9, 1.4, i), '#4E8E4F') : flower(x, y, 3.2, ['#FFFFFF', '#FFD86B', '#F7A8C4'][i % 3]); }
+      const snowL = `M${PK.x} ${PK.y} L620 330 L602 384 L586 352 L562 404 L546 362 L516 384 L500 340 L560 240 Z`;
+      const snowR = `M${PK.x} ${PK.y} L650 236 L700 300 L768 396 L728 386 L708 426 L676 398 L646 446 L628 404 L620 330 Z`;
+      return `<defs>${kit(id)}
+          <linearGradient id="mt-sky" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="880"><stop offset="0" stop-color="#6AAAE9"/><stop offset=".38" stop-color="#A6CFF4"/><stop offset=".72" stop-color="#DCEBF8"/><stop offset="1" stop-color="#F7EFE2"/></linearGradient>
+          <radialGradient id="mt-sun" cx="960" cy="230" r="460" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#FFF6DA" stop-opacity=".95"/><stop offset=".35" stop-color="#FFF1D0" stop-opacity=".45"/><stop offset="1" stop-color="#FFF1D0" stop-opacity="0"/></radialGradient>
+          <linearGradient id="mt-rock" gradientUnits="userSpaceOnUse" x1="0" y1="190" x2="0" y2="1000"><stop offset="0" stop-color="#B8CEE8"/><stop offset="1" stop-color="#D3E2F2"/></linearGradient>
+          <linearGradient id="mt-shade" gradientUnits="userSpaceOnUse" x1="0" y1="190" x2="0" y2="1000"><stop offset="0" stop-color="#6F8FBE"/><stop offset="1" stop-color="#8FAAD0"/></linearGradient>
+          <linearGradient id="mt-haze" gradientUnits="userSpaceOnUse" x1="0" y1="560" x2="0" y2="860"><stop offset="0" stop-color="#EAF2FB" stop-opacity="0"/><stop offset="1" stop-color="#EAF2FB" stop-opacity=".9"/></linearGradient>
+          <linearGradient id="mt-lake" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#B7DDF5"/><stop offset="1" stop-color="#6FAEDF"/></linearGradient>
+          <linearGradient id="mt-mead" gradientUnits="userSpaceOnUse" x1="0" y1="940" x2="0" y2="1500"><stop offset="0" stop-color="#B4DB94"/><stop offset="1" stop-color="#7DBA6C"/></linearGradient></defs>
+        <rect width="1200" height="1500" fill="url(#mt-sky)"/><rect width="1200" height="900" fill="url(#mt-sun)"/>
+        ${cloud(id, 160, 170, 1.1)}${cloud(id, 1010, 120, .8, .9)}${cloud(id, 360, 420, .7, .85)}${cloud(id, 980, 470, .9, .9)}
+        <path d="${range(-60, 1260, 720, 22, 120, 300, 11)}" fill="#C8DBF0"/>
+        <path d="${range(-60, 1260, 790, 16, 90, 230, 41)}" fill="#AFC8E6"/>
+        <rect y="540" width="1200" height="330" fill="url(#mt-haze)"/>
+        <path d="M-100 1120 L140 820 L300 640 L420 470 L500 340 L560 240 L${PK.x} ${PK.y} L650 236 L700 300 L780 420 L880 560 L1000 700 L1120 820 L1300 960 L1300 1200 L-100 1200 Z" fill="url(#mt-rock)"/>
+        <path d="M${PK.x} ${PK.y} L560 240 L500 340 L420 470 L300 640 L140 820 L-100 1120 L540 1120 L600 900 L560 760 L612 600 L576 470 L620 330 Z" fill="url(#mt-shade)"/>
+        <path d="M700 300 L758 520 L722 700 L760 900 M820 470 L896 690 L870 860 M520 420 L470 600 L500 760 M420 560 L360 720" fill="none" stroke="#5F7FAE" stroke-opacity=".35" stroke-width="4" stroke-linecap="round"/>
+        <path d="M640 520 L700 600 M690 650 L760 720 M560 640 L520 700" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="3" stroke-linecap="round"/>
+        <path d="${snowL}" fill="#DDE8F6"/><path d="${snowR}" fill="#fff"/>
+        <path d="M740 470 L790 500 L770 512 L800 540 L752 530 Z M560 520 L600 540 L570 556 Z M470 500 L500 520 L462 532 Z M860 600 L900 620 L880 634 Z" fill="#F2F7FD"/>
+        <g filter="url(#mt-b16)" opacity=".75">${[...Array(9)].map((_, i) => `<ellipse cx="${i * 150 - 20}" cy="${808 + (i % 2) * 14}" rx="150" ry="26" fill="#fff"/>`).join('')}</g>
+        <path d="${wavePath(842, 22, 160, 1, -40, 1240, 1500)}" fill="#86AEC0"/>${farP}
+        <path d="${wavePath(905, 28, 200, 2.2, -40, 1240, 1500)}" fill="#4A8A77"/>${nearP}
+        <path d="${wavePath(968, 22, 260, .5, -40, 1240, 1500)}" fill="url(#mt-mead)"/>
+        <path d="${waveTop(968, 22, 260, .5, -40, 1240)}" fill="none" stroke="#D6EFB8" stroke-width="6" opacity=".7"/>
+        <ellipse cx="260" cy="1022" rx="170" ry="34" fill="url(#mt-lake)"/><path d="M150 1020 Q 260 1006 370 1020" stroke="#fff" stroke-opacity=".6" stroke-width="3" fill="none"/><path d="M240 1006 L262 1034 L284 1008 Z" fill="#fff" opacity=".35"/>
+        <path d="${wavePath(1090, 30, 300, 1.7, -40, 1240, 1500)}" fill="#98CB80"/><path d="${waveTop(1090, 30, 300, 1.7, -40, 1240)}" fill="none" stroke="#C9E8A8" stroke-width="5" opacity=".7"/>
+        <path d="${wavePath(1240, 34, 340, 3, -40, 1240, 1500)}" fill="#88C175"/><path d="${waveTop(1240, 34, 340, 3, -40, 1240)}" fill="none" stroke="#BFE39C" stroke-width="5" opacity=".7"/>
+        <path d="${wavePath(1390, 28, 280, .9, -40, 1240, 1500)}" fill="#77B467"/>
+        ${meadowTrees}${tufts}${flowers}${rocks}`;
+    },
+    trail: (d, lt, L) => `<path d="${d}" fill="none" stroke="#8C7356" stroke-opacity=".45" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="${d}" fill="none" stroke="#EDDDB8" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="${d}" fill="none" stroke="#CDB68C" stroke-width="2" stroke-dasharray="3 10" stroke-linecap="round"/>
+      <path d="${d}" fill="none" stroke="#167ADF" stroke-opacity=".9" stroke-width="10" stroke-linecap="round" stroke-dasharray="${lt} ${L * 2}"/>
+      <path d="${d}" fill="none" stroke="#167ADF" stroke-width="3" stroke-linecap="round" stroke-dasharray="${lt} ${L * 2}" ${nss}/>`,
+  }),
+
+  // ---- road: patchwork countryside in perspective; the road winds to a city on the horizon ----
+  road: (() => {
+    const W = 1200, H = 1500, HZ = 360, VX = 600, N = 80, pts = [];
+    for (let i = 0; i <= N; i++) { const t = i / N, p = Math.pow(1 - t, 1.5) * 1.06, a = Math.sin(t * Math.PI * 5.2 + .5) * .5 * (1 - t * .2); pts.push([VX + a * 600 * p, HZ + 6 + (H - HZ) * p]); }
+    const per = y => clamp((y - HZ) / (H - HZ), 0, 1.1);
+    return illoWorld({
+      id: 'rd', W, H, flag: true, maxS: 2.2, dayPx: 34, bg: '#A7D28A', tension: .25, pts, goal: [VX, HZ + 4], whole: [0, 120, 1200, 1500], fog: [0, -30, 200],
+      paint(Pa) {
+        const id = 'rd', M = 220, Lp = [], Rp = [], Ls = [], Rs = [];
+        for (let i = 0; i <= M; i++) { const t = i / M, q = Pa.at(t), n = Pa.nrm(t), p = per(q.y), h = 3 + 40 * Math.pow(p, .95), sh = h + 4 + 10 * p; Lp.push([q.x + n.x * h, q.y + n.y * h]); Rp.push([q.x - n.x * h, q.y - n.y * h]); Ls.push([q.x + n.x * sh, q.y + n.y * sh]); Rs.push([q.x - n.x * sh, q.y - n.y * sh]); }
+        const f = a => a.map(p => p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' L'), poly = (a, b) => `M${f(a)} L${f(b.slice().reverse())} Z`, line = a => `M${f(a)}`;
+        const near = (x, y, r) => nearPath(Pa, x, y, r);
+        // fields: rows in depth × rays from the vanishing point
+        let fields = '', stripes = '', hedges = '', trees = '', houses = '';
+        const rows = [...Array(12)].map((_, k) => Math.pow(k / 11, 1.75)), rays = [...Array(19)].map((_, i) => -2400 + i * 266 + RR(-60, 60, i));
+        const at = (X, p) => [VX + (X - VX) * p, HZ + (H - HZ) * p];
+        const pal = ['#B9DC8E', '#A3D07E', '#D9E5A2', '#C6DE8F', '#E9DBA2', '#98C878', '#CFE29A'];
+        for (let k = 0; k < 11; k++) for (let i = 0; i < 18; i++) {
+          const p0 = rows[k], p1 = rows[k + 1], a = at(rays[i], p0), b = at(rays[i + 1], p0), c = at(rays[i + 1], p1), dd = at(rays[i], p1), col = pal[Math.floor(rnd(k * 31 + i * 7) * pal.length)];
+          fields += `<path d="M${a} L${b} L${c} L${dd} Z" fill="${col}"/>`;
+          if (rnd(k * 13 + i) > .55 && p1 > .08) for (let s = 1; s < 6; s++) { const u = s / 6, x0 = a[0] + (b[0] - a[0]) * u, x1 = dd[0] + (c[0] - dd[0]) * u; stripes += `<line x1="${x0}" y1="${a[1]}" x2="${x1}" y2="${c[1]}" stroke="#7FAF62" stroke-opacity=".28" stroke-width="${1 + 3 * p1}"/>`; }
+        }
+        // hedgerows along a few rays, and trees in them
+        for (let i = 1; i < 18; i += 2) for (let s = 0; s < 26; s++) { const p = Math.pow(s / 26, 1.5) + .02, [x, y] = at(rays[i], p), r = 3 + 16 * p; if (near(x, y, r + 14) || y > H + 20) continue; hedges += tree(x, y, r, '#7DBB6E', '#4E9460'); }
+        for (let i = 0; i < 70; i++) { const p = Math.pow(rnd(i + 300), 1.2) * 1.05 + .03, x = VX + (RR(-1, 1, i + 500)) * 900 * p, y = HZ + (H - HZ) * p, r = 4 + 22 * p; if (near(x, y, r + 50 * p + 8)) continue; trees += rnd(i) > .5 ? tree(x, y, r, '#86C376', '#4D915D') : pine(x, y, r * 3, '#5FA08A', '#3B7464'); }
+        for (let i = 0; i < 14; i++) { const p = .08 + rnd(i + 900) * .8, side = i % 2 ? 1 : -1, x = VX + side * (140 + rnd(i + 950) * 380) * p * 1.3, y = HZ + (H - HZ) * p, s = 6 + 34 * p; if (near(x, y, s * 2 + 20)) continue; houses += `<ellipse cx="${x + s * .4}" cy="${y + 2}" rx="${s * 1.4}" ry="${s * .3}" fill="#2E5A3A" opacity=".2"/><path d="M${x - s} ${y} v${-s * .9} h${s * 2} v${s * .9} Z" fill="#FBF6EE"/><path d="M${x + s * .2} ${y} v${-s * .9} h${s * .8} v${s * .9} Z" fill="#E4DCCF"/><path d="M${x - s * 1.15} ${y - s * .85} L${x - s * .2} ${y - s * 1.7} L${x + s * 1.15} ${y - s * 1.7} L${x + s * 1.15} ${y - s * .85} Z" fill="#E0735A"/><path d="M${x - s * 1.15} ${y - s * .85} L${x - s * .2} ${y - s * 1.7} L${x + s * .5} ${y - s * .85} Z" fill="#C85A44"/><rect x="${x - s * .6}" y="${y - s * .6}" width="${s * .35}" height="${s * .3}" fill="#9CC4E8"/>`; }
+        let city = ''; [[-110, 34], [-92, 56], [-72, 30], [-56, 80], [-38, 46], [-20, 66], [0, 110], [18, 52], [36, 74], [54, 34], [72, 58], [90, 28], [108, 44]].forEach(([dx, h], i) => { const w = 16 + (i % 3) * 4, x = VX + dx - w / 2; city += `<rect x="${x}" y="${HZ - h}" width="${w}" height="${h}" fill="${i % 2 ? '#93AFD3' : '#86A3CA'}"/><rect x="${x + w * .55}" y="${HZ - h}" width="${w * .45}" height="${h}" fill="#7B98C1"/>`; for (let r = 7; r < h - 5; r += 9) city += `<rect x="${x + 3}" y="${HZ - h + r}" width="${w * .35}" height="3" fill="#FFF0C8" opacity=".8"/>`; });
+        let dash = ''; for (let i = 0; i < 60; i++) { const t0 = i / 60, t1 = t0 + .45 / 60, a = Pa.at(t0), b = Pa.at(t1), p = per(a.y); dash += `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="#fff" stroke-width="${1 + 4 * p}" stroke-linecap="round" opacity=".9"/>`; }
+        // v11: painted art has no road, so the same road is laid over the painting
+        this._over = `<defs><linearGradient id="rd-road2" gradientUnits="userSpaceOnUse" x1="0" y1="${HZ}" x2="0" y2="${H}"><stop offset="0" stop-color="#B9C1CC"/><stop offset="1" stop-color="#6F7B8C"/></linearGradient></defs>
+          <path d="${poly(Ls, Rs)}" fill="#D9C79E" opacity=".9"/><path d="${poly(Lp, Rp)}" fill="url(#rd-road2)"/>
+          <path d="${line(Lp)}" fill="none" stroke="#fff" stroke-opacity=".8" stroke-width="2"/><path d="${line(Rp)}" fill="none" stroke="#fff" stroke-opacity=".8" stroke-width="2"/>${dash}`;
+        return `<defs>${kit(id)}
+            <linearGradient id="rd-sky" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="${HZ}"><stop offset="0" stop-color="#7DB7EE"/><stop offset=".55" stop-color="#BFDCF6"/><stop offset="1" stop-color="#FBE9D3"/></linearGradient>
+            <radialGradient id="rd-sun" cx="820" cy="${HZ - 30}" r="420" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#FFF3CF"/><stop offset=".3" stop-color="#FFE9C2" stop-opacity=".6"/><stop offset="1" stop-color="#FFE9C2" stop-opacity="0"/></radialGradient>
+            <linearGradient id="rd-road" gradientUnits="userSpaceOnUse" x1="0" y1="${HZ}" x2="0" y2="${H}"><stop offset="0" stop-color="#C3CCDA"/><stop offset="1" stop-color="#7A8AA2"/></linearGradient>
+            <linearGradient id="rd-haze" gradientUnits="userSpaceOnUse" x1="0" y1="${HZ - 10}" x2="0" y2="${HZ + 220}"><stop offset="0" stop-color="#F4EEE6" stop-opacity=".95"/><stop offset="1" stop-color="#F4EEE6" stop-opacity="0"/></linearGradient></defs>
+          <rect width="${W}" height="${HZ + 4}" fill="url(#rd-sky)"/><rect width="${W}" height="${HZ + 4}" fill="url(#rd-sun)"/>
+          <circle cx="820" cy="${HZ - 34}" r="34" fill="#FFE2A0"/>
+          ${cloud(id, 180, 120, 1)}${cloud(id, 960, 90, .75, .9)}${cloud(id, 420, 230, .6, .85)}
+          <path d="${range(-80, 1280, HZ + 2, 24, 40, 120, 71)}" fill="#AFC6E3"/>
+          <path d="${wavePath(HZ + 8, 10, 110, .4, -40, 1240, HZ + 60)}" fill="#A5CBB2"/>
+          ${city}
+          <rect y="${HZ + 6}" width="${W}" height="${H - HZ}" fill="#ABD38C"/>${fields}${stripes}
+          <rect y="${HZ - 10}" width="${W}" height="240" fill="url(#rd-haze)"/>
+          ${houses}${hedges}
+          <path d="${poly(Ls, Rs)}" fill="#D9C79E"/><path d="${poly(Lp, Rp)}" fill="url(#rd-road)"/>
+          <path d="${line(Lp)}" fill="none" stroke="#fff" stroke-opacity=".85" stroke-width="2"/><path d="${line(Rp)}" fill="none" stroke="#fff" stroke-opacity=".85" stroke-width="2"/>
+          ${dash}${trees}
+          <path d="M${VX - 26} ${HZ + 8} v-34 M${VX + 26} ${HZ + 8} v-34" stroke="#5E6E86" stroke-width="5"/><path d="M${VX - 32} ${HZ - 30} h64 v12 h-64 Z" fill="#167ADF"/>`;
+      },
+      trail: (d, lt, L) => `<path d="${d}" fill="none" stroke="#167ADF" stroke-opacity=".9" stroke-width="7" stroke-linecap="round" stroke-dasharray="${lt} ${L * 2}"/>
+        <path d="${d}" fill="none" stroke="#5AB0FF" stroke-width="3" stroke-linecap="round" stroke-dasharray="${lt} ${L * 2}" ${nss}/>`,
+    });
+  })(),
+
+  // ---- sea: from the pier toward a lighthouse island on the horizon ----
+  sea: (() => {
+    const W = 1200, H = 1500, HZ = 430, IX = 720, IY = HZ + 44;
+    const pts = [[560, 1400], [880, 1300], [330, 1185], [860, 1075], [380, 965], [820, 865], [450, 775], [780, 695], [560, 625], [760, 565], [680, 520], [716, IY + 8]]; // tacking, like a real sailboat
+    const per = y => clamp((y - HZ) / (H - HZ), 0, 1);
+    return illoWorld({
+      id: 'sea', W, H, flag: false, maxS: 3, tension: .12, dayPx: 40, bg: '#5A9BDD', pts, goal: [IX + 22, HZ - 150], whole: [0, 160, 1200, 1500], fog: [0, 90, 210],
+      paint(Pa) {
+        const id = 'sea'; let waves = '', glint = '', boats = '', gulls = '';
+        for (let i = 0; i < 700; i++) { const p = Math.pow(rnd(i + 11), 1.6), y = HZ + 8 + p * (H - HZ - 140), x = RR(-50, 1250, i + 77), s = 2 + 16 * per(y); if (nearPath(Pa, x, y, 8 + s)) continue; waves += `<path d="M${x - s} ${y} q ${s * .5} ${-s * .4} ${s} 0 q ${s * .5} ${-s * .4} ${s} 0" fill="none" stroke="#fff" stroke-opacity="${RR(.25, .6, i)}" stroke-width="${.8 + 2.2 * per(y)}" stroke-linecap="round"/>`; }
+        for (let i = 0; i < 160; i++) { const p = Math.pow(rnd(i + 401), 1.4), y = HZ + 6 + p * (H - HZ - 160), x = 330 + (rnd(i + 402) - .5) * (40 + 360 * per(y)); glint += `<ellipse cx="${x}" cy="${y}" rx="${2 + 14 * per(y)}" ry="${.6 + 2 * per(y)}" fill="#FFF6D8" opacity="${RR(.4, .9, i)}"/>`; }
+        [[220, HZ + 22, .5], [1010, HZ + 30, .6], [900, HZ + 70, .9]].forEach(([x, y, s]) => boats += `<path d="M${x - 22 * s} ${y} h${44 * s} l${-8 * s} ${9 * s} h${-28 * s} Z" fill="#fff"/><path d="M${x} ${y - 2} v${-40 * s} l${22 * s} ${36 * s} Z" fill="#fff"/><path d="M${x - 2} ${y - 4} v${-30 * s} l${-14 * s} ${28 * s} Z" fill="#F4D9B8"/>`);
+        [[520, 250], [552, 236], [880, 300], [910, 286], [400, 330]].forEach(([x, y]) => gulls += `<path d="M${x - 11} ${y} q 5.5 -7 11 0 q 5.5 -7 11 0" fill="none" stroke="#45607F" stroke-width="2.4" stroke-linecap="round"/>`);
+        const TX = IX + 22, TB = IY - 36, TT = HZ - 120;
+        return `<defs>${kit(id)}
+            <linearGradient id="sea-sky" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="${HZ}"><stop offset="0" stop-color="#78B4EE"/><stop offset=".6" stop-color="#C2DEF6"/><stop offset="1" stop-color="#FCE6CF"/></linearGradient>
+            <radialGradient id="sea-sun" cx="330" cy="${HZ - 20}" r="420" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#FFF2CC"/><stop offset=".3" stop-color="#FFE7C0" stop-opacity=".55"/><stop offset="1" stop-color="#FFE7C0" stop-opacity="0"/></radialGradient>
+            <linearGradient id="sea-water" gradientUnits="userSpaceOnUse" x1="0" y1="${HZ}" x2="0" y2="${H}"><stop offset="0" stop-color="#CDE5F7"/><stop offset=".25" stop-color="#8CC1EE"/><stop offset=".7" stop-color="#4E95DC"/><stop offset="1" stop-color="#3478C6"/></linearGradient>
+            <linearGradient id="sea-beam" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#FFF4C2" stop-opacity=".7"/><stop offset="1" stop-color="#FFF4C2" stop-opacity="0"/></linearGradient>
+            <radialGradient id="sea-lamp"><stop offset="0" stop-color="#FFF7D6"/><stop offset="1" stop-color="#FFF7D6" stop-opacity="0"/></radialGradient></defs>
+          <rect width="${W}" height="${HZ + 2}" fill="url(#sea-sky)"/><rect width="${W}" height="${HZ + 2}" fill="url(#sea-sun)"/><circle cx="330" cy="${HZ - 24}" r="40" fill="#FFE3A6"/>
+          ${cloud(id, 160, 140, 1)}${cloud(id, 980, 110, .8, .9)}${cloud(id, 640, 250, .55, .8)}
+          <path d="M-40 ${HZ} Q 60 ${HZ - 26} 160 ${HZ - 8} Q 220 ${HZ - 20} 290 ${HZ} Z M940 ${HZ} Q 1020 ${HZ - 22} 1100 ${HZ - 10} Q 1180 ${HZ - 24} 1260 ${HZ} Z" fill="#A9BFD8"/>
+          <rect y="${HZ}" width="${W}" height="${H - HZ}" fill="url(#sea-water)"/>${glint}${waves}${boats}${gulls}
+          <path d="M${TX} ${TT + 10} L${TX - 520} ${TT - 60} L${TX - 520} ${TT + 60} Z" fill="url(#sea-beam)" transform="scale(-1 1) translate(${-2 * TX} 0)"/>
+          <path d="M${TX} ${TT + 10} L${TX - 520} ${TT - 60} L${TX - 520} ${TT + 60} Z" fill="url(#sea-beam)"/>
+          <ellipse cx="${IX}" cy="${IY + 14}" rx="220" ry="16" fill="#fff" opacity=".5" filter="url(#sea-b6)"/>
+          <path d="M${IX - 200} ${IY + 12} Q ${IX - 170} ${IY - 30} ${IX - 110} ${IY - 36} Q ${IX - 40} ${IY - 70} ${IX + 40} ${IY - 56} Q ${IX + 130} ${IY - 50} ${IX + 170} ${IY - 18} Q ${IX + 200} ${IY} ${IX + 210} ${IY + 12} Z" fill="#7F92AE"/>
+          <path d="M${IX + 40} ${IY - 56} Q ${IX + 130} ${IY - 50} ${IX + 170} ${IY - 18} Q ${IX + 200} ${IY} ${IX + 210} ${IY + 12} L${IX + 20} ${IY + 12} Z" fill="#A3B3C9"/>
+          <path d="M${IX - 120} ${IY - 34} Q ${IX - 40} ${IY - 72} ${IX + 40} ${IY - 58} Q ${IX + 110} ${IY - 52} ${IX + 140} ${IY - 32} Q ${IX + 30} ${IY - 40} ${IX - 120} ${IY - 34} Z" fill="#86C477"/>
+          ${tree(IX - 90, IY - 34, 16, '#8FCB80', '#5C9F69')}${tree(IX - 60, IY - 42, 12, '#8FCB80', '#5C9F69')}
+          <rect x="${IX + 54}" y="${IY - 74}" width="44" height="26" fill="#FBF6EE"/><path d="M${IX + 50} ${IY - 72} L${IX + 76} ${IY - 92} L${IX + 102} ${IY - 72} Z" fill="#E0735A"/>
+          <path d="M${TX - 22} ${TB} L${TX - 13} ${TT + 22} L${TX + 13} ${TT + 22} L${TX + 22} ${TB} Z" fill="#FBF8F2"/><path d="M${TX} ${TB} L${TX} ${TT + 22} L${TX + 13} ${TT + 22} L${TX + 22} ${TB} Z" fill="#E6E0D6"/>
+          ${[0, 1, 2].map(i => { const y0 = TB - 18 - i * 34, y1 = y0 - 16, k0 = (TB - y0) / (TB - TT - 22), k1 = (TB - y1) / (TB - TT - 22); return `<path d="M${TX - lerp(22, 13, k0)} ${y0} L${TX - lerp(22, 13, k1)} ${y1} L${TX + lerp(22, 13, k1)} ${y1} L${TX + lerp(22, 13, k0)} ${y0} Z" fill="#E4574B"/>`; }).join('')}
+          <rect x="${TX - 18}" y="${TT + 16}" width="36" height="7" rx="2" fill="#2D3E57"/><rect x="${TX - 11}" y="${TT - 6}" width="22" height="22" fill="#FFE9A3" stroke="#2D3E57" stroke-width="2.5"/>
+          <path d="M${TX - 15} ${TT - 6} L${TX} ${TT - 22} L${TX + 15} ${TT - 6} Z" fill="#E4574B"/><circle cx="${TX}" cy="${TT + 5}" r="60" fill="url(#sea-lamp)" opacity=".85"/>
+          <path d="M-40 ${H - 120} C 260 ${H - 170}, 700 ${H - 90}, 1240 ${H - 150} L1240 ${H} L-40 ${H} Z" fill="#fff" opacity=".55"/>
+          <path d="M-40 ${H - 108} C 260 ${H - 156}, 700 ${H - 78}, 1240 ${H - 138} L1240 ${H} L-40 ${H} Z" fill="#F2DCAE"/>
+          <path d="M-40 ${H - 60} C 300 ${H - 90}, 800 ${H - 40}, 1240 ${H - 80} L1240 ${H} L-40 ${H} Z" fill="#E8CC94"/>
+          ${[...Array(40)].map((_, i) => tuft(RR(0, 1200, i + 700), RR(H - 70, H - 10, i + 760), RR(1.6, 2.6, i), '#9BB46A')).join('')}
+          <path d="M540 ${H - 40} L548 ${H - 150} L572 ${H - 150} L580 ${H - 40} Z" fill="#B98A5E"/>${[...Array(8)].map((_, i) => `<line x1="${542 + i * .5}" x2="${578 - i * .5}" y1="${H - 52 - i * 13}" y2="${H - 52 - i * 13}" stroke="#8C6440" stroke-width="2.5"/>`).join('')}
+          <rect x="544" y="${H - 156}" width="6" height="40" fill="#8C6440"/><rect x="570" y="${H - 156}" width="6" height="40" fill="#8C6440"/>`;
+      },
+      trail: (d, lt, L) => `<path d="${d}" fill="none" stroke="#fff" stroke-opacity=".85" stroke-width="2.4" stroke-dasharray="1 8" stroke-linecap="round" ${nss}/>
+        <path d="${d}" fill="none" stroke="#fff" stroke-opacity=".4" stroke-width="18" stroke-linecap="round" stroke-dasharray="${lt} ${L * 2}"/>
+        <path d="${d}" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-dasharray="${lt} ${L * 2}"/>`,
+    });
+  })(),
+
+  // ---- map: a painted island map with an inked route to the X ----
+  map: (() => {
+    const W = 1200, H = 1500, X = { x: 900, y: 360 };
+    const pts = [[250, 1250], [200, 1140], [330, 1080], [520, 1120], [660, 1040], [600, 940], [420, 930], [280, 860], [260, 740], [380, 660], [560, 680], [700, 620], [640, 520], [520, 470], [600, 380], [760, 420], [860, 470], [920, 420], [X.x - 10, X.y + 30]];
+    const coast = (() => { let d = ''; const n = 60; for (let i = 0; i <= n; i++) { const a = i / n * Math.PI * 2, r = 1 + .12 * Math.sin(a * 3 + 1) + .08 * Math.sin(a * 7 + 2) + .05 * Math.sin(a * 13); const x = 600 + Math.cos(a) * 470 * r, y = 760 + Math.sin(a) * 560 * r; d += `${i ? ' L' : 'M'}${x.toFixed(0)} ${y.toFixed(0)}`; } return d + ' Z'; })();
+    return illoWorld({
+      id: 'map', W, H, flag: false, maxS: 3, dayPx: 40, bg: '#EBDDBB', chip: 'above', pts, goal: [X.x, X.y - 20], whole: [0, 60, 1200, 1500], fog: [0, 0, 150],
+      paint(Pa) {
+        const id = 'map', ink = '#6B4E33'; let stains = '', mtns = '', forest = '', grid = '';
+        for (let i = 0; i < 24; i++) stains += `<circle cx="${RR(0, 1200, i + 1)}" cy="${RR(0, 1500, i + 2)}" r="${RR(30, 120, i + 3)}" fill="#C9A66B" opacity=".08"/>`;
+        for (let x = 100; x < W; x += 150) grid += `<line x1="${x}" y1="0" x2="${x}" y2="${H}" stroke="${ink}" stroke-opacity=".1" stroke-width="1.5"/>`;
+        for (let y = 100; y < H; y += 150) grid += `<line x1="0" y1="${y}" x2="${W}" y2="${y}" stroke="${ink}" stroke-opacity=".1" stroke-width="1.5"/>`;
+        [[620, 760, 60], [700, 720, 50], [560, 700, 44], [760, 800, 40], [420, 480, 46], [480, 450, 38], [880, 600, 42]].forEach(([x, y, s]) => { if (nearPath(Pa, x, y - s * .5, s * .8)) return; mtns += `<path d="M${x - s} ${y} L${x} ${y - s * 1.2} L${x + s} ${y} Z" fill="#D8C08E"/><path d="M${x} ${y - s * 1.2} L${x + s} ${y} L${x + s * .1} ${y} Z" fill="#B99A66"/><path d="M${x - s} ${y} L${x} ${y - s * 1.2} L${x + s} ${y}" fill="none" stroke="${ink}" stroke-width="2.5" stroke-linejoin="round"/><path d="M${x - s * .25} ${y - s * .9} L${x} ${y - s * 1.2} L${x + s * .3} ${y - s * .85}" fill="#fff" opacity=".7"/>`; });
+        [[380, 1000, 90], [820, 1000, 110], [260, 520, 70], [900, 760, 60], [600, 1220, 70]].forEach(([cx, cy, r], j) => { for (let i = 0; i < 40; i++) { const a = rnd(i + j * 60) * 6.28, dd = Math.sqrt(rnd(i + j * 60 + 7)) * r, x = cx + Math.cos(a) * dd, y = cy + Math.sin(a) * dd * .7; if (nearPath(Pa, x, y, 22)) continue; forest += `<circle cx="${x}" cy="${y - 8}" r="8" fill="#8DB57A"/><circle cx="${x + 2}" cy="${y - 10}" r="5" fill="#A9CC90"/><line x1="${x}" y1="${y}" x2="${x}" y2="${y - 3}" stroke="${ink}" stroke-width="1.5"/><circle cx="${x}" cy="${y - 8}" r="8" fill="none" stroke="${ink}" stroke-opacity=".5" stroke-width="1.2"/>`; } });
+        return `<defs>${kit(id)}<radialGradient id="map-vig" cx=".5" cy=".5" r=".75"><stop offset=".6" stop-color="#F3E6C6"/><stop offset="1" stop-color="#D9BE8A"/></radialGradient></defs>
+          <rect width="${W}" height="${H}" fill="url(#map-vig)"/>${stains}${grid}
+          <path d="${coast}" fill="#9CC7D6" opacity=".55" filter="url(#map-b40)" transform="translate(600 760) scale(1.12) translate(-600 -760)"/>
+          <path d="${coast}" fill="#E4DCB0"/>
+          <g filter="url(#map-b16)" opacity=".75"><ellipse cx="420" cy="980" rx="190" ry="140" fill="#B9D59A"/><ellipse cx="820" cy="980" rx="170" ry="150" fill="#A9CF90"/><ellipse cx="640" cy="720" rx="200" ry="130" fill="#E2C995"/><ellipse cx="300" cy="560" rx="140" ry="110" fill="#BFD9A0"/><ellipse cx="880" cy="420" rx="150" ry="120" fill="#EED8A8"/></g>
+          <path d="${coast}" fill="none" stroke="${ink}" stroke-width="3.5"/>
+          <path d="${coast}" fill="none" stroke="${ink}" stroke-opacity=".35" stroke-width="2" stroke-dasharray="3 7" transform="translate(600 760) scale(1.05) translate(-600 -760)"/>
+          <path d="M170 900 C 260 880, 330 930, 420 900 S 560 840, 640 880 S 760 960, 860 920 S 1000 860, 1080 880" fill="none" stroke="#7FB6CF" stroke-width="10" stroke-linecap="round"/>
+          <ellipse cx="560" cy="430" rx="70" ry="36" fill="#9CCBDC" stroke="${ink}" stroke-opacity=".5" stroke-width="2"/>
+          ${mtns}${forest}
+          <g transform="translate(150 1320)"><circle r="62" fill="none" stroke="${ink}" stroke-opacity=".5" stroke-width="2"/><path d="M0 -70 L12 -12 L70 0 L12 12 L0 70 L-12 12 L-70 0 L-12 -12 Z" fill="#E9D8AE" stroke="${ink}" stroke-width="2"/><path d="M0 -70 L12 -12 L0 0 Z M70 0 L12 12 L0 0 Z M0 70 L-12 12 L0 0 Z M-70 0 L-12 -12 L0 0 Z" fill="${ink}" opacity=".75"/><text y="-80" text-anchor="middle" font-family="Georgia,serif" font-weight="700" font-size="24" fill="${ink}">N</text></g>
+          <g transform="translate(600 120)"><path d="M-260 -30 L260 -30 L230 0 L260 30 L-260 30 L-230 0 Z" fill="#E7D3A6" stroke="${ink}" stroke-width="2.5"/><text y="10" text-anchor="middle" font-family="Georgia,serif" font-style="italic" font-weight="700" font-size="30" fill="${ink}">The way to ${exam().ex}</text></g>
+          <path d="M210 1290 h80 v-30 l-40 -26 l-40 26 Z" fill="#F4E8CB" stroke="${ink}" stroke-width="2.5" stroke-linejoin="round"/>`;
+      },
+      trail: (d, lt, L, e) => `<path d="${d}" fill="none" stroke="#A3301F" stroke-opacity=".8" stroke-width="6" stroke-dasharray="20 14" stroke-linecap="round"/>
+        <path d="${d}" fill="none" stroke="#A3301F" stroke-width="8" stroke-linecap="round" stroke-dasharray="${lt} ${L * 2}"/>
+        <path d="${d}" fill="none" stroke="#A3301F" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="${lt} ${L * 2}" ${nss}/>
+        <path d="M${X.x - 40} ${X.y - 40} L${X.x + 40} ${X.y + 40} M${X.x + 40} ${X.y - 40} L${X.x - 40} ${X.y + 40}" stroke="#A3301F" stroke-width="16" stroke-linecap="round" opacity="${e.kind === 'date' ? 1 : .35}"/>`,
+    });
+  })(),
+};
+function exLabel(e) { const y = d => `${fmt(d)}, ${d.getFullYear()}`; return e.kind === 'date' ? y(e.v) : e.kind === 'month' ? `${e.k === 'cfa' ? 'Window · ' : ''}${MON[e.v.getMonth()]} ${e.v.getFullYear()}` : e.kind === 'lt' ? `By ${y(e.end)}` : e.kind === 'gt' ? `After ${y(e.end)}` : `${fmt(e.win[0])} – ${y(e.win[1])}`; }
+const CAL = `<svg width="22" height="24" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="4" fill="none" stroke="#1565C8" stroke-width="2"/><path d="M3.5 10h17M8 3v4M16 3v4" stroke="#1565C8" stroke-width="2" stroke-linecap="round"/><path d="M8 15l2.5 2.5L16 12" fill="none" stroke="#1565C8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+document.getElementById('histb').innerHTML = CAL;
+// ================= v10 · the path is home =================
+// Meeting feedback (Oct 23): the path is the first thing you see; zoom in to this week's sessions; the calendar only looks back.
+const S = Object.assign(S0, { mod: 'mountain', rh: '3w', hist: false, art: 'paint' });
+const VW = 390, VH = 844, TOPH = 168, NAVT = 754;
+const RHYTHMS = [
+  { k: '3w', n: 3, t: '3 sessions a week', s: 'Kabir studies on some days, not all', done: [new Date(2026, 9, 20)] },
+  { k: 'daily', n: 6, t: 'Most days', s: '6 sessions a week', done: [new Date(2026, 9, 19), new Date(2026, 9, 20), new Date(2026, 9, 21)] },
+  { k: 'wkend', n: 2, t: 'Weekends only', s: '2 longer sessions', done: [] },
+  { k: 'over', n: 3, t: 'Week already done', s: 'Finished all 3 by Wednesday', done: [new Date(2026, 9, 19), new Date(2026, 9, 20), new Date(2026, 9, 21)] },
+];
+const rh = () => RHYTHMS.find(r => r.k === S.rh);
+// session roles follow session order, not the weekday (Problem 2 doc, section 2)
+const ROLE = n => n === 1 ? 'Start the week' : n === rh().n ? 'Wrap up the week' : 'Practise';
+function session(i) {
+  const s = SUBJ[(i + 1) % 6], long = rh().k === 'wkend';
+  const acts = i === rh().n ? [['flashcards', 'Flashcards', 'Mixed from this week', 12], ['pyqs', 'PYQs', 'Your mistakes this week', 15], ['exercises', 'Recap', `${s[0]}: key points`, 8]]
+    : [['exercises', 'Lesson & Exercises', `${s[0]}: next chapter`, long ? 20 : 12], ['pyqs', 'PYQs', `${long ? 40 : 20} questions`, long ? 30 : 15], ['flashcards', 'Flashcards', `${long ? 40 : 25} cards`, 10]];
+  return { i, s, role: ROLE(i), acts, min: acts.reduce((a, x) => a + x[3], 0) };
+}
+const doneN = () => rh().done.length;
+const nextI = () => doneN() + 1;
+const weekDone = () => doneN() >= rh().n;
+
+// ---------- camera: one free camera over the whole world, with three named stops ----------
+let CAM = null, anim = null, STOPS = null;
+function bbox(ts) { const Pa = P(), q = ts.map(t => Pa.at(t)); return { x0: Math.min(...q.map(p => p.x)), x1: Math.max(...q.map(p => p.x)), y0: Math.min(...q.map(p => p.y)), y1: Math.max(...q.map(p => p.y)) }; }
+// a stop is { s, F } where F is the world point shown at the screen point A
+function fitBox(b, top, bot, cap) { const s = Math.min((VW - 70) / Math.max(1, b.x1 - b.x0), (bot - top - 40) / Math.max(1, b.y1 - b.y0), cap); return center({ s, F: { x: (b.x0 + b.x1) / 2, y: (b.y0 + b.y1) / 2 }, A: { x: VW / 2, y: (top + bot) / 2 } }); }
+const center = c => ({ s: c.s, F: { x: c.F.x + (VW / 2 - c.A.x) / c.s, y: c.F.y + (VH / 2 - c.A.y) / c.s } });
+function stops() {
+  const w = WORLDS[S.mod], Pa = P(), ws = wkStart(TODAY), t0 = progress();
+  const dt = Math.max(.0005, tAt(addD(TODAY, 1)) - t0 || t0 - tAt(addD(TODAY, -1)));
+  // Today: Rezzy close up in the gap between the top bar and the session card
+  const today = center({ s: clamp((w.dayPx || 54) * 1.25 / (dt * Pa.L), .3, w.maxS || 8), F: Pa.at(t0), A: { x: VW / 2, y: 300 } });
+  // Week: ~34px of path per day, centred between where you are and where the week ends
+  const tm = (t0 + tAt(addD(ws, 7))) / 2, today_s = clamp((w.dayPx || 54) * 1.25 / (dt * Pa.L), .3, w.maxS || 8);
+  const week = center({ s: Math.min(clamp(34 / (dt * Pa.L), VW / w.W, w.maxS || 8), today_s / 1.8), F: Pa.at(tm), A: { x: VW / 2, y: 430 } });
+  // Journey: from Rezzy up to the goal, between the top bar and the headline
+  const me = Pa.at(t0), g = w.goal, whole = fitBox({ x0: Math.min(me.x, g.x) - 60, x1: Math.max(me.x, g.x) + 60, y0: Math.min(me.y, g.y), y1: Math.max(me.y, g.y) }, 290, 600, 1);
+  return [today, week, whole];
+}
+// the painting has edges: never show past the sides; the sky may run above the top, and the bottom may run under the session bar
+function keepIn(c) {
+  const w = WORLDS[S.mod], s = Math.max(c.s, VW / w.W), vx = VW / s;
+  const x = vx >= w.W ? w.W / 2 : clamp(c.F.x, vx / 2, w.W - vx / 2);
+  const yMax = w.H - (VH / 2 - 150) / s, yMin = VH / 2 / s;
+  return { s, F: { x, y: Math.min(yMax, Math.max(yMin, c.F.y)) } };
+}
+// how far out we are: 0 = Today, 1 = This week, 2 = Journey (log-scale between the stops)
+function zc(s) { const L = STOPS.map(x => Math.log(x.s)), v = Math.log(s); if (v >= L[1]) return clamp((L[0] - v) / (L[0] - L[1] || 1), 0, 1); return 1 + clamp((L[1] - v) / (L[1] - L[2] || 1), 0, 1.4); }
+function flyTo(to, dur = 620) {
+  cancelAnimationFrame(anim); const a = { ...CAM, F: { ...CAM.F } }, b = keepIn(to), t0 = performance.now();
+  const step = now => { const k = clamp((now - t0) / dur, 0, 1), q = 1 - Math.pow(1 - k, 3);
+    CAM = { s: Math.exp(lerp(Math.log(a.s), Math.log(b.s), q)), F: { x: lerp(a.F.x, b.F.x, q), y: lerp(a.F.y, b.F.y, q) } }; apply(); if (k < 1) anim = requestAnimationFrame(step); };
+  anim = requestAnimationFrame(step);
+}
+const goLevel = l => flyTo(STOPS[l]);
+function zoomAt(f, sx = VW / 2, sy = VH / 2, dur = 260) {
+  const s0 = CAM.s, lo = STOPS[2].s * .8, hi = STOPS[0].s * 1.4, s1 = clamp(s0 * f, lo, hi);
+  const P0 = { x: CAM.F.x + (sx - VW / 2) / s0, y: CAM.F.y + (sy - VH / 2) / s0 };
+  const to = { s: s1, F: { x: P0.x - (sx - VW / 2) / s1, y: P0.y - (sy - VH / 2) / s1 } };
+  if (!dur) { CAM = keepIn(to); apply(); } else flyTo(to, dur);
+}
+const toScreen = p => ({ x: (p.x - CAM.F.x) * CAM.s + VW / 2, y: (p.y - CAM.F.y) * CAM.s + VH / 2 });
+
+// ---------- the world + what sits on the path ----------
+function sessionT() {
+  // done sessions sit where they happened; the rest wait between you and the end of the week, not on a date
+  const ws = wkStart(TODAY), we = addD(ws, 7), r = rh(), t0 = progress(), tw = tAt(we), out = [];
+  r.done.forEach((d, k) => out.push({ i: k + 1, t: tAt(d) + (tAt(addD(d, 1)) - tAt(d)) * .5, st: 'done', d }));
+  const left = r.n - r.done.length;
+  for (let k = 0; k < left; k++) out.push({ i: r.done.length + k + 1, t: t0 + (tw - t0) * (k + 1) / (left + .6), st: k === 0 ? 'next' : 'later' });
+  return out;
+}
+// the sky continues above the painting, so Journey can show the whole way without a seam
+// v10 zooms closer than v9's card did: the road needs more room for a week of sessions
+WORLDS.road.maxS = 6; WORLDS.map.maxS = 4;
+const SKY_VEC = { mountain: '#6cabe9', road: '#81b9ee', sea: '#7cb6ee', map: '#e0c99b' };
+// v11: painted backgrounds (Codex imagegen), laid under the same live path. Falls back to the vector art until loaded.
+const ART_SRC = { mt: 'art/mountain.jpg', rd: 'art/road.jpg', sea: 'art/sea.jpg', map: 'art/map.jpg' }, ART_OK = {};
+const SKY_ART = { mountain: '#6cabe9', road: '#81b9ee', sea: '#7cb6ee', map: '#e0c99b' };
+const W2ID = { mountain: 'mt', road: 'rd', sea: 'sea', map: 'map' }, sky = m => (S.art === 'paint' && ART_OK[W2ID[m]] ? SKY_ART : SKY_VEC)[m];
+// the sky above the art takes the painting's own top-edge colour (median of the top row) so there's no seam
+const ID2W = Object.fromEntries(Object.entries(W2ID).map(([w, id]) => [id, w]));
+Object.entries(ART_SRC).forEach(([id, src]) => { const im = new Image(); im.onload = () => {
+  const c = document.createElement('canvas'); c.width = 64; c.height = 1; c.getContext('2d').drawImage(im, 0, 0, im.width, 2, 0, 0, 64, 1);
+  const d = c.getContext('2d').getImageData(0, 0, 64, 1).data, px = [...Array(64)].map((_, i) => [d[i * 4], d[i * 4 + 1], d[i * 4 + 2]]).sort((p, q) => p[0] + p[1] + p[2] - q[0] - q[1] - q[2]);
+  SKY_ART[ID2W[id]] = '#' + px[32].map(v => v.toString(16).padStart(2, '0')).join('');
+  ART_OK[id] = true; if (typeof render === 'function') render(); }; im.src = src; });
+function renderWorld() {
+  const e = exam(), w = WORLDS[S.mod], ws = wkStart(TODAY);
+  STOPS = stops(); if (!CAM) CAM = { ...STOPS[0] };
+  let ov = '';
+  for (const x of sessionT()) ov += `<div class="ses z01 ${x.st}" data-t="${x.t}" ${x.st === 'done' ? 'data-hist="1"' : 'data-go="0"'}>${x.st === 'done' ? CHECK : x.i}${x.st === 'next' ? '<i></i>' : ''}</div>`;
+  // where this week ends (no days inside it, just the boundary)
+  ov += `<div class="wkend z01" data-t="${tAt(addD(ws, 7))}">Week ${weekNo(TODAY) + 1}</div>`;
+  // past weeks behind you, summed up (week view)
+  for (let k = 1; k <= 5; k++) { const a = addD(ws, -7 * k); if (a < START) break; const n = pastWeek(a); ov += `<div class="pw z1" data-t="${tAt(a)}" data-hist="1"><b>W${weekNo(a)}</b>${n.got >= n.of ? CHECK.replace('#fff', '#1a7b4a') : `${n.got}/${n.of}`}</div>`; }
+  // months (journey view)
+  const endD = e.kind === 'none' ? addD(START, 240) : e.end;
+  for (let d = new Date(START.getFullYear(), START.getMonth() + 1, 1); d < endD; d = addM(d, 1)) ov += `<div class="mo z2" data-t="${tAt(d)}">${MS[d.getMonth()]}</div>`;
+  ov += `<div class="mo z2 st" data-t="0" data-hist="1">Start · ${fmt(START)}</div>`;
+  if (w.flag) ov += `<div class="gflag zf" data-goal="1">${e.kind === 'date' ? FLAG('#167ADF', 20, '#153356') : FLAG('#fff', 20, '#8DB6EA')}</div>`;
+  ov += e.kind !== 'none' ? `<div class="goal z2" data-goal="1">${e.ex}<small>${exLabel(e)}</small></div>` : `<div class="goal z2 tap" data-goal="1" data-act="date">Add your exam date<small>to see where you're going</small></div>`;
+  ov += `<div class="me" data-t="${progress()}"><img src="assets/rezzy-headshot.webp">${S.mod === 'sea' ? `<svg class="boat" viewBox="0 0 60 22" width="60" height="22"><path d="M2 2 H58 L48 20 H12 Z" fill="#E4574B"/><path d="M2 2 H58 L56 6 H4 Z" fill="#fff" opacity=".7"/></svg>` : ''}</div>`;
+  const vp = document.getElementById('vp');
+  vp.style.background = w.bg;
+  vp.innerHTML = `<div class="world" id="world"><svg width="${w.W}" height="${w.H}" viewBox="0 0 ${w.W} ${w.H}" style="overflow:visible"><rect x="${-w.W}" y="-3000" width="${3 * w.W}" height="3002" fill="${sky(S.mod)}"/>${w.art(e)}</svg></div><div class="ov" id="ov">${ov}</div>`;
+  bind(vp);
+  apply();
+}
+function pastWeek(a) { let got = 0; for (let k = 0; k < 7; k++) { const r = rec(addD(a, k)); if (r.st === 'done' || r.st === 'partial') got++; } return { got: Math.min(got, rh().n), of: rh().n }; }
+
+function apply() {
+  const world = document.getElementById('world'); if (!world) return;
+  const w = WORLDS[S.mod], Pa = P(), z = zc(CAM.s);
+  world.style.transform = `translate(${VW / 2 - CAM.F.x * CAM.s}px, ${VH / 2 - CAM.F.y * CAM.s}px) scale(${CAM.s})`;
+  document.querySelectorAll('#ov > *').forEach(o => {
+    const p = o.dataset.goal ? w.goal : Pa.at(+o.dataset.t), q = toScreen(p); let x = q.x, y = q.y;
+    if (o.classList.contains('mo') || o.classList.contains('pw') || o.classList.contains('wkend')) { const nn = Pa.nrm(+o.dataset.t), sd = nn.x >= 0 ? 1 : -1; x += nn.x * sd * 18; y += nn.y * sd * 18; o.style.transform = sd > 0 ? 'translate(0,-50%)' : 'translate(-100%,-50%)'; }
+    if (o.classList.contains('goal')) { if (w.chip === 'above') { y -= 34; o.style.transform = 'translate(-50%,-100%)'; } else { const right = x < VW - 150; x += right ? 18 : -18; y -= w.flag ? 22 : 4; o.style.transform = right ? 'translate(0,-50%)' : 'translate(-100%,-50%)'; } }
+    o.style.left = x + 'px'; o.style.top = y + 'px';
+    const c = o.classList, op = c.contains('z01') ? clamp((1.55 - z) / .4, 0, 1) : c.contains('z1') ? clamp((z - .45) / .4, 0, 1) * clamp((1.7 - z) / .35, 0, 1) : c.contains('z2') ? clamp((z - 1.25) / .5, 0, 1) : c.contains('zf') ? clamp((z - .6) / .4, 0, 1) : 1;
+    o.style.opacity = op; o.style.pointerEvents = op < .3 ? 'none' : 'auto';
+  });
+  const me = document.querySelector('#ov .me'); if (me) { const s = lerp(56, 30, clamp(z / 2, 0, 1)); me.querySelector('img').style.width = me.querySelector('img').style.height = s + 'px'; const b = me.querySelector('.boat'); if (b) b.style.width = s * 1.3 + 'px'; }
+  // the session card is full in Today, a slim bar further out
+  const lv = z < .5 ? 0 : z < 1.5 ? 1 : 2;
+  document.getElementById('phone').dataset.lv = lv;
+  document.querySelectorAll('#seg button').forEach(b => b.classList.toggle('on', +b.dataset.lv === lv));
+  const hl = document.getElementById('hl'); if (hl._lv !== lv + S.mod + S.c + S.rh) { hl._lv = lv + S.mod + S.c + S.rh; hl.innerHTML = headline(lv); bind(hl); if (lv) hl.animate([{ opacity: 0, transform: 'translateY(4px)' }, { opacity: 1, transform: 'none' }], { duration: 240, easing: 'ease-out' }); }
+}
+function headline(lv) {
+  const e = exam(), r = rh();
+  if (lv === 0) return '';
+  if (lv === 1) return `<div class="pl"><b>${weekDone() ? 'Week done' : 'This week'}</b><span>${doneN()} of ${r.n} sessions</span>${dots()}</div>`;
+  if (e.kind === 'none') return `<div class="big"><div class="n">Where to?</div><div class="u">Add your exam date to see the ${mod().goalWord}</div><span class="cta tap" data-act="date" style="display:inline-block;width:auto;margin-top:10px;padding:9px 14px;font-size:12px">ADD EXAM DATE</span></div>`;
+  return `<div class="big"><div class="n">${bigN(e)}</div><div class="u">${mod().unit}</div></div>`;
+}
+const dots = () => `<span class="dots">${[...Array(rh().n)].map((_, k) => `<i class="${k < doneN() ? 'on' : ''}"></i>`).join('')}</span>`;
+
+// ---------- the session card (live components: WeekDayDetail rows, cta-glossy) ----------
+function renderCard() {
+  const r = rh(), daily = r.k === 'daily', el = document.getElementById('card');
+  if (weekDone()) {
+    el.innerHTML = `<div class="grab"></div><div class="eyebrow">This week · ${r.n} of ${r.n} sessions ${dots()}</div>
+      <div class="inset" style="padding:18px;text-align:center;margin-top:10px"><div style="font:700 17.5px/1.3 var(--font);color:#272625">Week done. Nice.</div><div style="margin-top:4px;font:400 15px/1.4 var(--font);color:#52504C">Next week's sessions open on Monday. Want to keep going?</div></div>
+      <button class="cta press" style="margin-top:12px;background:#fff;color:#167adf;box-shadow:inset 0 0 0 1.5px #167adf">Extra session · 20 min</button>`;
+    document.getElementById('bar').innerHTML = `<div class="bt"><b>Week done</b><span>${r.n} of ${r.n} sessions</span></div><span class="bgo ghost">Extra</span>`;
+    return;
+  }
+  const s = session(nextI());
+  const rows = s.acts.map(a => `<div class="arow" style="background:${SURF[a[0]][0]};border-color:${SURF[a[0]][1]}"><div class="ic"><img src="${SURF[a[0]][2]}"></div><div class="tx"><div class="t">${a[1]}</div><div class="s">${a[2]}</div></div><div class="m">${a[3]} min <span class="todo"></span></div></div>`).join('');
+  el.innerHTML = `<div class="grab"></div>
+    <div class="eyebrow">${daily ? "Today's session" : `This week · ${doneN()} of ${r.n} sessions`} ${dots()}</div>
+    <div class="sh"><div><b>Session ${s.i}</b><span>${s.role} · ${s.min} min${daily ? '' : ' · any day this week'}</span></div><div class="subj sm" style="border-color:${s.s[3]}"><div class="tile" style="background:${s.s[2]}">${s.s[1]}</div><b>${s.s[0]}</b></div></div>
+    ${rows}<button class="cta press">Start session</button>`;
+  document.getElementById('bar').innerHTML = `<div class="bt"><b>Next: Session ${s.i}</b><span>${s.s[0]} · ${s.min} min</span></div><span class="bgo">Start</span>`;
+}
+
+// ---------- the past: a calendar that only looks back ----------
+function renderHist() {
+  const v = new Date(TODAY.getFullYear(), TODAY.getMonth(), 1), off = (v.getDay() + 6) % 7, st = addD(v, -off);
+  let cells = '';
+  for (let i = 0; i < 42; i++) { const d = addD(st, i); if (i >= 35 && d.getMonth() !== v.getMonth()) break; const out = d.getMonth() !== v.getMonth(), r = rec(d), t = same(d, TODAY), fut = d > TODAY && !t;
+    cells += `<div class="d ${fut ? 'fut' : ''} ${t ? 'today' : ''} ${out ? 'out' : ''}"><div class="sq">${r.min != null && !out && !fut ? RING(r.min / 30) : ''}<span class="n">${d.getDate()}</span></div></div>`; }
+  const weeks = []; for (let a = wkStart(TODAY), k = 0; a >= wkStart(START) && k < 6; a = addD(a, -7), k++) { const cur = k === 0, n = cur ? { got: doneN(), of: rh().n } : pastWeek(a);
+    weeks.push(`<div class="wrow"><div><b>Week ${weekNo(a)}${cur ? ' · this week' : ''}</b><span>${fmt(a)} – ${fmt(addD(a, 6))}</span></div><span class="dots">${[...Array(n.of)].map((_, j) => `<i class="${j < n.got ? 'on' : ''}"></i>`).join('')}</span><em>${n.got}/${n.of}</em></div>`); }
+  document.getElementById('hist').innerHTML = `<div class="calhead"><div class="round tap press" id="hclose"><svg width="16" height="16" viewBox="0 0 24 24" style="fill:none;stroke:#1F2937;stroke-width:2.4;stroke-linecap:round"><path d="M6 6l12 12M18 6 6 18"/></svg></div><b style="font:700 17px/1 var(--font)">Your study so far</b><span style="width:38px"></span></div>
+    <div class="month"><b>${MON[v.getMonth()]}<em>${v.getFullYear()}</em></b></div>
+    <div class="wd">${WD.map((w, i) => `<span class="${i === (TODAY.getDay() + 6) % 7 ? 't' : ''}">${w}</span>`).join('')}</div><div class="grid">${cells}</div>
+    <div class="legend"><svg width="12" height="12" viewBox="0 0 38 38"><circle cx="19" cy="19" r="15" fill="none" stroke="#E8EEF6" stroke-width="7"/><path d="M19 4 A15 15 0 0 1 34 19" fill="none" stroke="#1F7AE0" stroke-width="7"/></svg>Ring = study time · full at 30 min. Days ahead stay empty: there's no plan per day.</div>
+    <div class="wlabel" style="margin-top:18px">Weeks</div>${weeks.join('')}`;
+  document.getElementById('hclose').onclick = () => toggleHist(false);
+}
+function toggleHist(on) { S.hist = on; if (on) renderHist(); document.getElementById('hist').classList.toggle('open', on); }
+
+// ---------- side panel ----------
+function renderSide() {
+  document.getElementById('opts').innerHTML = MODS.map((m, i) => `<button class="opt ${m.k === S.mod ? 'on' : ''}" data-m="${m.k}"><b><i>${i + 1}</i>${m.name}</b><span>${m.tag}</span></button>`).join('');
+  document.getElementById('rhs').innerHTML = RHYTHMS.map(r => `<button class="opt ${r.k === S.rh ? 'on' : ''}" data-r="${r.k}"><b>${r.t}</b><span>${r.s}</span></button>`).join('');
+  document.getElementById('cases').innerHTML = CASES.map(c => `<button class="${c.k === S.c && !S.setTo ? 'on' : ''}" data-c="${c.k}" title="${c.g}">${c.ex} · ${c.said}</button>`).join('');
+  document.getElementById('arts').innerHTML = [['paint', 'Painted', 'Generated illustrations (v11)'], ['vec', 'Vector', 'The v10 placeholder art']].map(([k, t, d]) => `<button class="opt ${k === S.art ? 'on' : ''}" data-art="${k}"><b>${t}</b><span>${d}</span></button>`).join('');
+  document.querySelectorAll('[data-art]').forEach(b => b.onclick = () => { S.art = b.dataset.art; render(); });
+  document.querySelectorAll('[data-m]').forEach(b => b.onclick = () => { S.mod = b.dataset.m; CAM = null; render(); });
+  document.querySelectorAll('[data-r]').forEach(b => b.onclick = () => { S.rh = b.dataset.r; render(); });
+  document.querySelectorAll('[data-c]').forEach(b => b.onclick = () => { S.c = b.dataset.c; S.setTo = null; const lv = +document.getElementById('phone').dataset.lv || 0; CAM = null; render(); CAM = { ...STOPS[lv] }; apply(); });
+}
+function renderTop() { const e = exam(); document.getElementById('pill').innerHTML = `${e.kind === 'none' ? 'Set your exam date' : `${e.ex} · ${bigN(e)}`}${CHEV('#6B7280', 12, 'd')}`; }
+function render() { renderSide(); renderTop(); renderCard(); renderWorld(); if (S.hist) renderHist(); }
+function bind(root) {
+  root.querySelectorAll('[data-hist]').forEach(el => el.onclick = ev => { ev.stopPropagation(); if (!vpDrag) toggleHist(true); });
+  root.querySelectorAll('[data-go]').forEach(el => el.onclick = ev => { ev.stopPropagation(); if (!vpDrag) goLevel(+el.dataset.go); });
+  root.querySelectorAll('[data-act="date"]').forEach(el => el.onclick = ev => { ev.stopPropagation(); openDate(); });
+}
+
+// ---------- gestures: drag to look around, pinch / ctrl+wheel / double-tap to zoom ----------
+let vpDrag = false;
+(() => {
+  const vp = document.getElementById('vp'), pts = new Map(); let d = null, lastTap = 0, pinch = null;
+  const rel = ev => { const r = vp.getBoundingClientRect(); return { x: ev.clientX - r.left, y: ev.clientY - r.top }; };
+  vp.addEventListener('pointerdown', ev => { cancelAnimationFrame(anim); pts.set(ev.pointerId, rel(ev)); vp.setPointerCapture(ev.pointerId);
+    if (pts.size === 2) { const [a, b] = [...pts.values()]; pinch = { d: Math.hypot(a.x - b.x, a.y - b.y), s: CAM.s }; d = null; }
+    else { d = { ...rel(ev), F: { ...CAM.F }, moved: false }; vpDrag = false; } });
+  vp.addEventListener('pointermove', ev => { if (!pts.has(ev.pointerId)) return; pts.set(ev.pointerId, rel(ev));
+    if (pinch && pts.size === 2) { const [a, b] = [...pts.values()], m = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }; zoomAt(pinch.s * Math.hypot(a.x - b.x, a.y - b.y) / pinch.d / CAM.s, m.x, m.y, 0); return; }
+    if (!d) return; const p = rel(ev), dx = p.x - d.x, dy = p.y - d.y; if (Math.hypot(dx, dy) > 4) d.moved = vpDrag = true;
+    if (d.moved) { CAM = keepIn({ s: CAM.s, F: { x: d.F.x - dx / CAM.s, y: d.F.y - dy / CAM.s } }); apply(); } });
+  const up = ev => { pts.delete(ev.pointerId); if (pts.size < 2) pinch = null; if (!d) return;
+    if (!d.moved) { const now = Date.now(); if (now - lastTap < 320) zoomAt(1.8, d.x, d.y); lastTap = now; } d = null; setTimeout(() => vpDrag = false, 0); };
+  vp.addEventListener('pointerup', up); vp.addEventListener('pointercancel', up);
+  vp.addEventListener('wheel', ev => { ev.preventDefault(); const p = rel(ev); if (ev.ctrlKey) zoomAt(Math.exp(-ev.deltaY * .012), p.x, p.y, 0); else { cancelAnimationFrame(anim); CAM = keepIn({ s: CAM.s, F: { x: CAM.F.x + ev.deltaX / CAM.s, y: CAM.F.y + ev.deltaY / CAM.s } }); apply(); } }, { passive: false });
+})();
+document.querySelectorAll('#seg button').forEach(b => b.onclick = () => goLevel(+b.dataset.lv));
+document.getElementById('zin').onclick = () => zoomAt(1.7);
+document.getElementById('zout').onclick = () => zoomAt(1 / 1.7);
+document.getElementById('pill').onclick = () => goLevel(2);
+document.getElementById('histb').onclick = () => toggleHist(true);
+document.getElementById('bar').onclick = () => goLevel(0);
+document.getElementById('card').addEventListener('click', ev => { if (ev.target.closest('.grab')) goLevel(1); });
+
+// ---------- exam date sheet ----------
+const PICKS = [{ kind: 'date', v: new Date(2026, 11, 13), t: 'Dec 13, 2026', s: 'Exact date' }, { kind: 'date', v: new Date(2027, 2, 7), t: 'Mar 7, 2027', s: 'Published date' }, { kind: 'date', v: new Date(2027, 7, 15), t: 'Aug 15, 2027', s: 'Exact date' }, { kind: 'month', v: new Date(2027, 5, 1), t: 'June 2027', s: 'Month only' }];
+function openDate() {
+  document.getElementById('bsheet').innerHTML = `<div class="handle"></div><h3>When's your exam?</h3><p>Your path and weekly target will shift to fit the new date.</p>${PICKS.map((x, i) => `<div class="optrow" data-p="${i}">${x.t}<span>${x.s}</span></div>`).join('')}`;
+  document.getElementById('scrim').classList.add('open'); document.getElementById('bsheet').classList.add('open');
+  document.querySelectorAll('[data-p]').forEach(el => el.onclick = () => { const x = PICKS[+el.dataset.p]; S.setTo = { kind: x.kind, v: x.v }; closeDate(); CAM = null; render(); goLevel(2); toast(`Exam date saved: ${x.t}`); });
+}
+function closeDate() { document.getElementById('scrim').classList.remove('open'); document.getElementById('bsheet').classList.remove('open'); }
+document.getElementById('scrim').onclick = closeDate;
+function toast(t) { const el = document.getElementById('toast'); el.textContent = t; el.classList.add('show'); clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('show'), 2200); }
+render();
+
+</script>
+</body>
+</html>
